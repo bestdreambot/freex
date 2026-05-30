@@ -45,6 +45,7 @@
       justify-content: space-between;
       height: 56px;
       flex-shrink: 0;
+      z-index: 10;
     }
     .logo {
       font-size: 1.3rem;
@@ -65,10 +66,16 @@
       padding: 5px;
       border-radius: 6px;
       transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .icon-btn:hover, .icon-btn:active {
       background: var(--bg-hover);
       color: var(--text-primary);
+    }
+    .menu-btn {
+      display: none;
     }
 
     /* Main Container */
@@ -80,7 +87,7 @@
 
     /* Sidebar */
     .sidebar {
-      width: 280px;
+      width: 300px;
       background: var(--bg-sidebar);
       border-right: 1px solid var(--border);
       display: flex;
@@ -97,7 +104,7 @@
       background: var(--bg-primary);
       border: 1px solid var(--border);
       color: var(--text-primary);
-      padding: 8px 12px;
+      padding: 10px 12px;
       border-radius: 6px;
       font-size: 0.9rem;
       outline: none;
@@ -171,6 +178,7 @@
       overflow-y: auto;
       padding: 30px 40px;
       background: var(--bg-primary);
+      position: relative;
     }
     .note-view {
       max-width: 800px;
@@ -227,6 +235,8 @@
       background: transparent;
       padding: 0;
     }
+    
+    /* Empty State */
     .empty-state {
       text-align: center;
       padding: 60px 20px;
@@ -237,297 +247,58 @@
       margin-bottom: 20px;
       opacity: 0.5;
     }
-
-    /* Mobile Menu Overlay */
-    .overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 100;
+    .empty-state h2 {
+      color: var(--text-primary);
+      margin-bottom: 10px;
     }
-    .overlay.active {
-      display: block;
+    .empty-state p {
+      margin-bottom: 30px;
+      line-height: 1.6;
     }
-
-    /* Mobile Responsive */
-    @media (max-width: 768px) {
-      .sidebar {
-        position: fixed;
-        left: 0;
-        top: 56px;
-        bottom: 0;
-        z-index: 101;
-        transform: translateX(-100%);
-      }
-      .sidebar.open {
-        transform: translateX(0);
-      }
-      .content {
-        padding: 20px;
-      }
-      .note-view-title {
-        font-size: 1.5rem;
-      }
-    }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: var(--bg-primary);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--text-secondary);
-    }
-
-    /* Loading */
-    .loading {
+    .action-buttons {
       display: flex;
-      align-items: center;
+      gap: 12px;
       justify-content: center;
-      height: 100%;
-      color: var(--text-secondary);
+      flex-wrap: wrap;
     }
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
+    .action-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .action-btn:hover {
+      background: var(--accent-hover);
+    }
+    .action-btn.secondary {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+    }
+    .action-btn.secondary:hover {
+      background: var(--bg-hover);
+    }
+
+    /* Floating Action Button */
+    .fab {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      background: var(--accent);
+      border: none;
       border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <div style="display: flex; align-items: center; gap: 15px;">
-      <button class="icon-btn" onclick="toggleSidebar()" style="display: none;" id="menuBtn">☰</button>
-      <div class="logo">FreeX</div>
-    </div>
-    <div class="header-actions">
-      <button class="icon-btn" onclick="refreshData()" title="Обновить">⟳</button>
-      <button class="icon-btn" onclick="window.location.href='/admin.html'" title="Админка">⚙</button>
-    </div>
-  </div>
-
-  <div class="container">
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <input type="text" class="search-box" id="searchBox" placeholder="Поиск заметок..." oninput="searchNotes()">
-      </div>
-      <div class="nav-tabs">
-        <button class="nav-tab active" onclick="switchZone('public')">🌐 Публичная</button>
-        <button class="nav-tab" onclick="switchZone('private')">🔒 Приватная</button>
-      </div>
-      <div class="notes-list" id="notesList">
-        <div class="loading">
-          <div class="spinner"></div>
-        </div>
-      </div>
-    </aside>
-
-    <main class="content" id="content">
-      <div class="empty-state">
-        <div class="empty-state-icon">📚</div>
-        <h2>Добро пожаловать в FreeX</h2>
-        <p>Выберите заметку из списка слева или создайте новую в админке</p>
-      </div>
-    </main>
-  </div>
-
-  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
-
-  <script>
-    let currentZone = 'public';
-    let notes = { public: [], private: [] };
-    let filteredNotes = { public: [], private: [] };
-
-    // Init
-    document.addEventListener('DOMContentLoaded', () => {
-      loadNotes();
-      checkMobile();
-    });
-
-    function checkMobile() {
-      if (window.innerWidth <= 768) {
-        document.getElementById('menuBtn').style.display = 'block';
-      }
-    }
-
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('open');
-      document.getElementById('overlay').classList.toggle('active');
-    }
-
-    async function loadNotes() {
-      try {
-        const [publicRes, privateRes] = await Promise.all([
-          fetch('content/public.json').catch(() => ({ ok: false })),
-          fetch('content/private.json').catch(() => ({ ok: false }))
-        ]);
-
-        if (publicRes.ok) notes.public = await publicRes.json();
-        if (privateRes.ok) notes.private = await privateRes.json();
-
-        filteredNotes = { ...notes };
-        renderNotesList();
-      } catch (error) {
-        console.error('Error loading notes:', error);
-        document.getElementById('notesList').innerHTML = `
-          <div class="empty-state">
-            <p>Ошибка загрузки</p>
-          </div>
-        `;
-      }
-    }
-
-    function refreshData() {
-      document.getElementById('notesList').innerHTML = `
-        <div class="loading">
-          <div class="spinner"></div>
-        </div>
-      `;
-      loadNotes();
-    }
-
-    function switchZone(zone) {
-      currentZone = zone;
-      document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
-      event.target.classList.add('active');
-      renderNotesList();
-      
-      // Close sidebar on mobile after selection
-      if (window.innerWidth <= 768) {
-        toggleSidebar();
-      }
-    }
-
-    function renderNotesList() {
-      const list = document.getElementById('notesList');
-      const currentNotes = filteredNotes[currentZone] || [];
-
-      if (currentNotes.length === 0) {
-        list.innerHTML = `
-          <div class="empty-state" style="padding: 30px 15px;">
-            <p style="color: var(--text-secondary); font-size: 0.9rem;">
-              ${currentZone === 'public' ? 'Нет публичных заметок' : 'Нет приватных заметок'}
-            </p>
-          </div>
-        `;
-        return;
-      }
-
-      // Sort by date (newest first)
-      const sorted = [...currentNotes].sort((a, b) => new Date(b.id) - new Date(a.id));
-
-      list.innerHTML = sorted.map(note => `
-        <div class="note-item" onclick="openNote(${note.id})">
-          <div class="note-title">${escapeHtml(note.title)}</div>
-          <div class="note-preview">${escapeHtml(note.content.substring(0, 60))}${note.content.length > 60 ? '...' : ''}</div>
-          <div class="note-date">${note.date}</div>
-        </div>
-      `).join('');
-    }
-
-    function searchNotes() {
-      const query = document.getElementById('searchBox').value.toLowerCase();
-      
-      ['public', 'private'].forEach(zone => {
-        if (query === '') {
-          filteredNotes[zone] = notes[zone];
-        } else {
-          filteredNotes[zone] = notes[zone].filter(note => 
-            note.title.toLowerCase().includes(query) || 
-            note.content.toLowerCase().includes(query)
-          );
-        }
-      });
-
-      if (document.getElementById('sidebar').classList.contains('open') || window.innerWidth > 768) {
-        renderNotesList();
-      }
-    }
-
-    function openNote(id) {
-      const allNotes = [...notes.public, ...notes.private];
-      const note = allNotes.find(n => n.id === id);
-      
-      if (!note) return;
-
-      const content = document.getElementById('content');
-      content.innerHTML = `
-        <article class="note-view">
-          <div class="note-view-header">
-            <h1 class="note-view-title">${escapeHtml(note.title)}</h1>
-            <div class="note-view-meta">
-              <span>📅 ${note.date}</span>
-              <span>${currentZone === 'public' ? '🌐 Публичная' : '🔒 Приватная'}</span>
-            </div>
-          </div>
-          <div class="note-view-body">
-            ${formatContent(note.content)}
-          </div>
-        </article>
-      `;
-
-      // On mobile, close sidebar after opening note
-      if (window.innerWidth <= 768) {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('overlay').classList.remove('active');
-      }
-    }
-
-    function formatContent(text) {
-      // Simple markdown-like formatting
-      let formatted = escapeHtml(text);
-      
-      // Headers
-      formatted = formatted.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-      formatted = formatted.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-      formatted = formatted.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-      
-      // Code blocks
-      formatted = formatted.replace(/
-```([\s\S]*?)
-```/g, '<pre><code>$1</code></pre>');
-      
-      // Inline code
-      formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
-      
-      // Bold
-      formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      
-      // Italic
-      formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
-      
-      // Line breaks
-      formatted = formatted.replace(/\n/g, '<br>');
-      
-      return formatted;
-    }
-
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
-    // Handle window resize
-    window.addEventListener('resize', checkMobile);
-  </script>
-</body>
-</html>
-
+      color: white;
+      font-size: 1.8rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: 
