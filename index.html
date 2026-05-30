@@ -7,254 +7,233 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="FreeX">
-  <title>FreeX KB</title>
+  <title>FreeX</title>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     :root {
-      --bg-primary: #1e1e1e; --bg-secondary: #252526; --bg-sidebar: #2d2d2d;
-      --bg-hover: #3e3e42; --border: #3e3e42; --text-primary: #d4d4d4;
-      --text-secondary: #858585; --accent: #007acc; --accent-hover: #0098ff;
+      --bg: #1e1e1e; --sidebar: #252526; --hover: #2a2d2e; --border: #333;
+      --text: #d4d4d4; --text-muted: #858585; --accent: #007acc;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-primary); color: var(--text-primary); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-    .header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; height: 56px; flex-shrink: 0; z-index: 10; }
-    .logo { font-size: 1.3rem; font-weight: 700; color: var(--accent); letter-spacing: 0.5px; }
-    .header-actions { display: flex; gap: 10px; }
-    .icon-btn { background: transparent; border: none; color: var(--text-secondary); font-size: 1.3rem; cursor: pointer; padding: 5px; border-radius: 6px; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
-    .icon-btn:active { background: var(--bg-hover); color: var(--text-primary); }
-    .menu-btn { display: none; }
-    .container { display: flex; flex: 1; overflow: hidden; }
-    .sidebar { width: 300px; background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease; }
-    .sidebar-header { padding: 15px; border-bottom: 1px solid var(--border); }
-    .search-box { width: 100%; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 10px 12px; border-radius: 6px; font-size: 0.9rem; outline: none; }
-    .search-box:focus { border-color: var(--accent); }
-    .nav-tabs { display: flex; border-bottom: 1px solid var(--border); }
-    .nav-tab { flex: 1; padding: 12px; background: transparent; border: none; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; }
-    .nav-tab.active { color: var(--text-primary); border-bottom-color: var(--accent); background: var(--bg-primary); }
-    .notes-list { flex: 1; overflow-y: auto; padding: 10px; }
-    .note-item { padding: 12px; border-radius: 6px; cursor: pointer; margin-bottom: 4px; transition: 0.2s; border-left: 3px solid transparent; }
-    .note-item:active { background: var(--bg-hover); border-left-color: var(--accent); }
-    .note-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; }
-    .note-preview { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .note-date { font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; }
-    .content { flex: 1; overflow-y: auto; padding: 30px 40px; background: var(--bg-primary); position: relative; }
-    .note-view { max-width: 800px; margin: 0 auto; }
-    .note-view-header { margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-    .note-view-title { font-size: 2rem; font-weight: 700; margin-bottom: 10px; line-height: 1.2; }
-    .note-view-meta { display: flex; gap: 20px; color: var(--text-secondary); font-size: 0.9rem; }
-    .note-view-body { font-size: 1.05rem; line-height: 1.7; }
-    .note-view-body p { margin-bottom: 16px; }
-    .note-view-body h1, .note-view-body h2, .note-view-body h3 { margin: 30px 0 15px; }
-    .note-view-body h1 { font-size: 1.8rem; } .note-view-body h2 { font-size: 1.5rem; } .note-view-body h3 { font-size: 1.2rem; }
-    .note-view-body code { background: var(--bg-secondary); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
-    .note-view-body pre { background: var(--bg-secondary); padding: 15px; border-radius: 8px; overflow-x: auto; margin: 20px 0; }
-    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
-    .empty-state-icon { font-size: 4rem; margin-bottom: 20px; opacity: 0.5; }
-    .empty-state h2 { color: var(--text-primary); margin-bottom: 10px; }
-    .empty-state p { margin-bottom: 30px; line-height: 1.6; }
-    .action-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-    .action-btn { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
-    .action-btn:active { background: var(--accent-hover); }
-    .action-btn.secondary { background: var(--bg-secondary); border: 1px solid var(--border); }
-    .fab { position: fixed; bottom: 90px; right: 20px; width: 56px; height: 56px; background: var(--accent); border: none; border-radius: 50%; color: white; font-size: 1.8rem; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4); transition: 0.2s; display: flex; align-items: center; justify-content: center; z-index: 50; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--text); height: 100vh;
+      display: flex; overflow: hidden;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      width: 260px; background: var(--sidebar); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; flex-shrink: 0;
+    }
+    .sidebar-header {
+      padding: 12px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo { font-weight: 700; font-size: 1.1rem; color: var(--accent); }
+    .menu-btn {
+      display: none; background: none; border: none; color: var(--text);
+      font-size: 1.3rem; cursor: pointer; padding: 5px;
+    }
+    .tabs { display: flex; border-bottom: 1px solid var(--border); }
+    .tab {
+      flex: 1; padding: 10px; background: none; border: none;
+      color: var(--text-muted); font-size: 0.8rem; cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active { color: var(--text); border-bottom-color: var(--accent); background: var(--bg); }
+    .search { padding: 8px; }
+    .search input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); padding: 8px; border-radius: 6px; font-size: 0.85rem;
+      outline: none;
+    }
+    .search input:focus { border-color: var(--accent); }
+    .notes-list { flex: 1; overflow-y: auto; padding: 4px; }
+    .note-item {
+      padding: 10px; border-radius: 6px; cursor: pointer; margin-bottom: 2px;
+      font-size: 0.9rem;
+    }
+    .note-item:hover, .note-item.active { background: var(--hover); }
+    .note-item-title { font-weight: 500; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .note-item-preview { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .note-item-date { font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; }
+    .empty-list { padding: 20px; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+    
+    /* Main Content */
+    .main { flex: 1; overflow-y: auto; padding: 30px; position: relative; }
+    .note-content { max-width: 700px; margin: 0 auto; }
+    .note-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; line-height: 1.2; }
+    .note-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+    .note-body { font-size: 1rem; line-height: 1.6; }
+    .note-body p { margin-bottom: 12px; }
+    .note-body code { background: var(--sidebar); padding: 2px 5px; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
+    .note-body pre { background: var(--sidebar); padding: 12px; border-radius: 6px; overflow-x: auto; margin: 15px 0; }
+    .note-body pre code { background: none; padding: 0; }
+    
+    /* Welcome Screen */
+    .welcome {
+      height: 100%; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      padding: 20px; color: var(--text-muted);
+    }
+    .welcome-icon { font-size: 3rem; margin-bottom: 15px; opacity: 0.6; }
+    .welcome h2 { color: var(--text); margin-bottom: 10px; font-size: 1.3rem; }
+    .welcome p { margin-bottom: 20px; line-height: 1.5; }
+    
+    /* FAB */
+    .fab {
+      position: fixed; bottom: 20px; right: 20px; width: 48px; height: 48px;
+      background: var(--accent); border: none; border-radius: 50%;
+      color: white; font-size: 1.5rem; cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      display: flex; align-items: center; justify-content: center;
+    }
     .fab:active { transform: scale(0.95); }
-    .bottom-nav { display: none; background: var(--bg-secondary); border-top: 1px solid var(--border); padding: 8px 0; position: fixed; bottom: 0; left: 0; right: 0; z-index: 20; }
-    .bottom-nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px; color: var(--text-secondary); text-decoration: none; font-size: 0.75rem; }
-    .bottom-nav-item.active { color: var(--accent); }
-    .bottom-nav-icon { font-size: 1.4rem; }
+    
+    /* Mobile */
     @media (max-width: 768px) {
-      .menu-btn { display: flex; }
-      .sidebar { position: fixed; left: 0; top: 56px; bottom: 0; z-index: 101; transform: translateX(-100%); width: 280px; }
+      .sidebar {
+        position: fixed; left: 0; top: 0; bottom: 0; z-index: 100;
+        transform: translateX(-100%); width: 280px;
+      }
       .sidebar.open { transform: translateX(0); }
-      .content { padding: 20px; padding-bottom: 80px; }
-      .note-view-title { font-size: 1.5rem; }
-      .bottom-nav { display: flex; }
-      .fab { bottom: 90px; }
-      .action-buttons { flex-direction: column; }
-      .action-btn { width: 100%; justify-content: center; }
+      .menu-btn { display: block; }
+      .main { padding: 20px; }
+      .note-title { font-size: 1.5rem; }
+      .overlay {
+        display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5); z-index: 99;
+      }
+      .overlay.active { display: block; }
     }
-    .overlay { display: none; position: fixed; top: 56px; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; }
-    .overlay.active { display: block; }
-    .loading { display: flex; align-items: center; justify-content: center; padding: 40px 20px; color: var(--text-secondary); }
-    .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: var(--bg-primary); }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div style="display: flex; align-items: center; gap: 15px;">
-      <button class="icon-btn menu-btn" onclick="toggleSidebar()"></button>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
       <div class="logo">FreeX</div>
+      <button class="menu-btn" onclick="toggleSidebar()">☰</button>
     </div>
-    <div class="header-actions">
-      <button class="icon-btn" onclick="refreshData()" title="Обновить">⟳</button>
-      <button class="icon-btn" onclick="location.href='/admin.html'" title="Админка"></button>
+    <div class="tabs">
+      <button class="tab active" onclick="switchZone('public', this)">🌐 Публичная</button>
+      <button class="tab" onclick="switchZone('private', this)"> Приватная</button>
     </div>
-  </div>
+    <div class="search">
+      <input type="text" placeholder="Поиск..." oninput="searchNotes(this.value)">
+    </div>
+    <div class="notes-list" id="notesList">
+      <div class="empty-list">Загрузка...</div>
+    </div>
+  </aside>
 
-  <div class="container">
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <input type="text" class="search-box" id="searchBox" placeholder="Поиск заметок..." oninput="searchNotes()">
-      </div>
-      <div class="nav-tabs">
-        <button class="nav-tab active" onclick="switchZone('public', this)">🌐 Публичная</button>
-        <button class="nav-tab" onclick="switchZone('private', this)">🔒 Приватная</button>
-      </div>
-      <div class="notes-list" id="notesList">
-        <div class="loading"><div class="spinner"></div></div>
-      </div>
-    </aside>
+  <main class="main" id="main">
+    <div class="welcome">
+      <div class="welcome-icon">📚</div>
+      <h2>FreeX — Твоя база знаний</h2>
+      <p>Нажми ☰ чтобы открыть список заметок<br>или создай новую через кнопку +</p>
+    </div>
+  </main>
 
-    <main class="content" id="content">
-      <div class="empty-state">
-        <div class="empty-state-icon">📚</div>
-        <h2>Добро пожаловать в FreeX</h2>
-        <p>Твоя личная база знаний<br>Выбери заметку из списка или создай новую</p>
-        <div class="action-buttons">
-          <a href="/admin.html" class="action-btn"><span>➕</span><span>Создать заметку</span></a>
-          <button class="action-btn secondary" onclick="alert('📱 Нажми ☰ для списка заметок.\nПереключай зоны вкладками.\nВсе данные в GitHub.')"><span>📖</span><span>Как использовать</span></button>
-        </div>
-      </div>
-    </main>
-  </div>
-
-  <button class="fab" onclick="location.href='/admin.html'" title="Добавить заметку">+</button>
-
-  <div class="bottom-nav">
-    <a href="#" class="bottom-nav-item active" onclick="switchZoneFromBottom('public'); return false;">
-      <span class="bottom-nav-icon">🌐</span><span>Публичная</span>
-    </a>
-    <a href="/admin.html" class="bottom-nav-item">
-      <span class="bottom-nav-icon">➕</span><span>Создать</span>
-    </a>
-    <a href="#" class="bottom-nav-item" onclick="switchZoneFromBottom('private'); return false;">
-      <span class="bottom-nav-icon"></span><span>Приватная</span>
-    </a>
-  </div>
-
+  <button class="fab" onclick="location.href='/admin.html'">+</button>
   <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
   <script>
     let currentZone = 'public';
     let notes = { public: [], private: [] };
-    let filteredNotes = { public: [], private: [] };
+    let filtered = { public: [], private: [] };
 
-    document.addEventListener('DOMContentLoaded', () => {
-      loadNotes();
-      if (window.innerWidth <= 768) document.querySelector('.menu-btn').style.display = 'flex';
-    });
+    async function load() {
+      try {
+        const [p, r] = await Promise.all([
+          fetch('content/public.json').then(r => r.ok ? r.json() : []),
+          fetch('content/private.json').then(r => r.ok ? r.json() : [])
+        ]);
+        notes = { public: p, private: r };
+        filtered = { ...notes };
+        render();
+      } catch(e) {
+        document.getElementById('notesList').innerHTML = '<div class="empty-list">Ошибка загрузки</div>';
+      }
+    }
+
+    function render() {
+      const list = document.getElementById('notesList');
+      const arr = filtered[currentZone] || [];
+      
+      if (!arr.length) {
+        list.innerHTML = `<div class="empty-list">Нет заметок<br><a href="/admin.html" style="color:var(--accent);display:inline-block;margin-top:8px;">Создать +</a></div>`;
+        return;
+      }
+
+      list.innerHTML = [...arr].sort((a,b) => b.id - a.id).map(n => `
+        <div class="note-item" onclick="open(${n.id})">
+          <div class="note-item-title">${esc(n.title)}</div>
+          <div class="note-item-preview">${esc(n.content.substring(0,50))}${n.content.length>50?'...':''}</div>
+          <div class="note-item-date">${n.date}</div>
+        </div>
+      `).join('');
+    }
+
+    function open(id) {
+      const note = [...notes.public, ...notes.private].find(n => n.id === id);
+      if (!note) return;
+      
+      document.getElementById('main').innerHTML = `
+        <div class="note-content">
+          <h1 class="note-title">${esc(note.title)}</h1>
+          <div class="note-meta">${note.date} • ${currentZone === 'public' ? '🌐 Публичная' : ' Приватная'}</div>
+          <div class="note-body">${format(note.content)}</div>
+        </div>
+      `;
+      
+      if (window.innerWidth <= 768) toggleSidebar();
+      window.scrollTo(0,0);
+    }
+
+    function switchZone(zone, btn) {
+      currentZone = zone;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    }
+
+    function search(q) {
+      q = q.toLowerCase();
+      ['public','private'].forEach(z => {
+        filtered[z] = q ? notes[z].filter(n => n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q)) : notes[z];
+      });
+      render();
+    }
 
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('open');
       document.getElementById('overlay').classList.toggle('active');
     }
 
-    async function loadNotes() {
-      try {
-        const [pubRes, privRes] = await Promise.all([
-          fetch('content/public.json').catch(() => ({ ok: false })),
-          fetch('content/private.json').catch(() => ({ ok: false }))
-        ]);
-        if (pubRes.ok) notes.public = await pubRes.json();
-        if (privRes.ok) notes.private = await privRes.json();
-        filteredNotes = { ...notes };
-        renderNotesList();
-      } catch (e) {
-        document.getElementById('notesList').innerHTML = '<div style="padding:20px;color:var(--text-secondary)">Ошибка загрузки</div>';
-      }
-    }
-
-    function refreshData() {
-      document.getElementById('notesList').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-      loadNotes();
-    }
-
-    function switchZone(zone, btn) {
-      currentZone = zone;
-      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      renderNotesList();
-      if (window.innerWidth <= 768) toggleSidebar();
-    }
-
-    function switchZoneFromBottom(zone) {
-      currentZone = zone;
-      document.querySelectorAll('.nav-tab').forEach((t, i) => {
-        t.classList.remove('active');
-        if ((zone === 'public' && i === 0) || (zone === 'private' && i === 1)) t.classList.add('active');
-      });
-      renderNotesList();
-      window.scrollTo(0, 0);
-    }
-
-    function renderNotesList() {
-      const list = document.getElementById('notesList');
-      const arr = filteredNotes[currentZone] || [];
-      if (!arr.length) {
-        list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:0.9rem;">
-          Нет заметок в зоне "${currentZone === 'public' ? 'Публичная' : 'Приватная'}"<br>
-          <a href="/admin.html" style="color:var(--accent);margin-top:10px;display:inline-block;">Создать первую →</a></div>`;
-        return;
-      }
-      list.innerHTML = [...arr].sort((a,b) => b.id - a.id).map(n => `
-        <div class="note-item" onclick="openNote(${n.id})">
-          <div class="note-title">${escape(n.title)}</div>
-          <div class="note-preview">${escape(n.content.substring(0,60))}${n.content.length>60?'...':''}</div>
-          <div class="note-date">${n.date}</div>
-        </div>`).join('');
-    }
-
-    function searchNotes() {
-      const q = document.getElementById('searchBox').value.toLowerCase();
-      ['public','private'].forEach(z => {
-        filteredNotes[z] = q ? notes[z].filter(n => n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q)) : notes[z];
-      });
-      renderNotesList();
-    }
-
-    function openNote(id) {
-      const note = [...notes.public, ...notes.private].find(n => n.id === id);
-      if (!note) return;
-      document.getElementById('content').innerHTML = `
-        <article class="note-view">
-          <div class="note-view-header">
-            <h1 class="note-view-title">${escape(note.title)}</h1>
-            <div class="note-view-meta"><span> ${note.date}</span><span>${currentZone==='public'?'🌐 Публичная':'🔒 Приватная'}</span></div>
-          </div>
-          <div class="note-view-body">${formatMd(note.content)}</div>
-        </article>`;
-      if (window.innerWidth <= 768) toggleSidebar();
-      window.scrollTo(0,0);
-    }
-
-    function formatMd(t) {
-      let h = escape(t);
-      h = h.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-      h = h.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-      h = h.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-      h = h.replace(/
-```([\s\S]*?)
-```/g, '<pre><code>$1</code></pre>');
-      h = h.replace(/`([^`]+)`/g, '<code>$1</code>');
+    function format(t) {
+      let h = esc(t);
+      h = h.replace(/### (.*$)/gim, '<h3>$1</h3>');
+      h = h.replace(/## (.*$)/gim, '<h2>$1</h2>');
+      h = h.replace(/# (.*$)/gim, '<h1>$1</h1>');
       h = h.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       h = h.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      h = h.replace(/`(.*?)`/g, '<code>$1</code>');
       h = h.replace(/\n/g, '<br>');
       return h;
     }
 
-    function escape(t) {
+    function esc(t) {
       const d = document.createElement('div');
       d.textContent = t;
       return d.innerHTML;
     }
 
-    window.addEventListener('resize', () => {
-      if (window.innerWidth <= 768) document.querySelector('.menu-btn').style.display = 'flex';
-      else document.querySelector('.menu-btn').style.display = 'none';
-    });
+    load();
   </script>
 </body>
 </html>
