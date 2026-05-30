@@ -6,10 +6,9 @@
   <meta name="theme-color" content="#1e1e1e">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="FreeX">
   <title>FreeX</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
       --bg: #1e1e1e; --sidebar: #252526; --hover: #2a2d2e; --border: #333;
       --text: #d4d4d4; --text-muted: #858585; --accent: #007acc;
@@ -17,127 +16,151 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--bg); color: var(--text); height: 100vh;
-      display: flex; overflow: hidden;
+      display: flex; flex-direction: column; overflow: hidden;
     }
     
-    /* Sidebar */
-    .sidebar {
-      width: 260px; background: var(--sidebar); border-right: 1px solid var(--border);
-      display: flex; flex-direction: column; flex-shrink: 0;
-    }
-    .sidebar-header {
-      padding: 12px; border-bottom: 1px solid var(--border);
+    /* Header - всегда виден */
+    .header {
+      height: 50px; background: var(--sidebar); border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
+      padding: 0 15px; flex-shrink: 0; z-index: 10;
     }
     .logo { font-weight: 700; font-size: 1.1rem; color: var(--accent); }
     .menu-btn {
-      display: none; background: none; border: none; color: var(--text);
-      font-size: 1.3rem; cursor: pointer; padding: 5px;
+      background: none; border: none; color: var(--text);
+      font-size: 1.5rem; cursor: pointer; padding: 5px 10px;
+      display: none; /* Показываем только на мобильных */
+    }
+    
+    .container { display: flex; flex: 1; overflow: hidden; }
+    
+    /* Sidebar */
+    .sidebar {
+      width: 280px; background: var(--sidebar); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; flex-shrink: 0;
     }
     .tabs { display: flex; border-bottom: 1px solid var(--border); }
     .tab {
-      flex: 1; padding: 10px; background: none; border: none;
-      color: var(--text-muted); font-size: 0.8rem; cursor: pointer;
+      flex: 1; padding: 12px; background: none; border: none;
+      color: var(--text-muted); font-size: 0.85rem; cursor: pointer;
       border-bottom: 2px solid transparent;
     }
     .tab.active { color: var(--text); border-bottom-color: var(--accent); background: var(--bg); }
-    .search { padding: 8px; }
+    .search { padding: 10px; }
     .search input {
       width: 100%; background: var(--bg); border: 1px solid var(--border);
-      color: var(--text); padding: 8px; border-radius: 6px; font-size: 0.85rem;
+      color: var(--text); padding: 8px 12px; border-radius: 6px; font-size: 0.9rem;
       outline: none;
     }
     .search input:focus { border-color: var(--accent); }
-    .notes-list { flex: 1; overflow-y: auto; padding: 4px; }
+    .notes-list { flex: 1; overflow-y: auto; padding: 6px; }
     .note-item {
-      padding: 10px; border-radius: 6px; cursor: pointer; margin-bottom: 2px;
-      font-size: 0.9rem;
+      padding: 10px 12px; border-radius: 6px; cursor: pointer; margin-bottom: 3px;
+      font-size: 0.9rem; transition: 0.15s;
     }
     .note-item:hover, .note-item.active { background: var(--hover); }
-    .note-item-title { font-weight: 500; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .note-item-title { font-weight: 500; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .note-item-preview { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .note-item-date { font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; }
-    .empty-list { padding: 20px; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+    .note-item-date { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+    .empty-list { padding: 30px 20px; text-align: center; color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; }
+    .empty-list a { color: var(--accent); display: inline-block; margin-top: 10px; }
     
     /* Main Content */
-    .main { flex: 1; overflow-y: auto; padding: 30px; position: relative; }
+    .main { flex: 1; overflow-y: auto; padding: 25px; }
     .note-content { max-width: 700px; margin: 0 auto; }
-    .note-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; line-height: 1.2; }
+    .note-title { font-size: 1.7rem; font-weight: 700; margin-bottom: 10px; line-height: 1.2; }
     .note-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
     .note-body { font-size: 1rem; line-height: 1.6; }
     .note-body p { margin-bottom: 12px; }
-    .note-body code { background: var(--sidebar); padding: 2px 5px; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
+    .note-body code { background: var(--sidebar); padding: 2px 6px; border-radius: 3px; font-family: monospace; }
     .note-body pre { background: var(--sidebar); padding: 12px; border-radius: 6px; overflow-x: auto; margin: 15px 0; }
     .note-body pre code { background: none; padding: 0; }
     
     /* Welcome Screen */
     .welcome {
-      height: 100%; display: flex; flex-direction: column;
+      height: calc(100vh - 50px); display: flex; flex-direction: column;
       align-items: center; justify-content: center; text-align: center;
       padding: 20px; color: var(--text-muted);
     }
-    .welcome-icon { font-size: 3rem; margin-bottom: 15px; opacity: 0.6; }
-    .welcome h2 { color: var(--text); margin-bottom: 10px; font-size: 1.3rem; }
-    .welcome p { margin-bottom: 20px; line-height: 1.5; }
+    .welcome-icon { font-size: 3.5rem; margin-bottom: 20px; opacity: 0.6; }
+    .welcome h2 { color: var(--text); margin-bottom: 12px; font-size: 1.4rem; }
+    .welcome p { line-height: 1.6; font-size: 0.95rem; }
     
     /* FAB */
     .fab {
-      position: fixed; bottom: 20px; right: 20px; width: 48px; height: 48px;
+      position: fixed; bottom: 20px; right: 20px; width: 52px; height: 52px;
       background: var(--accent); border: none; border-radius: 50%;
-      color: white; font-size: 1.5rem; cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      color: white; font-size: 1.8rem; cursor: pointer;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.4);
       display: flex; align-items: center; justify-content: center;
+      z-index: 5;
     }
     .fab:active { transform: scale(0.95); }
     
+    /* Overlay */
+    .overlay {
+      display: none; position: fixed; top: 50px; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6); z-index: 99;
+    }
+    .overlay.active { display: block; }
+    
     /* Mobile */
     @media (max-width: 768px) {
+      .menu-btn { display: block; }
       .sidebar {
-        position: fixed; left: 0; top: 0; bottom: 0; z-index: 100;
+        position: fixed; left: 0; top: 50px; bottom: 0; z-index: 100;
         transform: translateX(-100%); width: 280px;
+        transition: transform 0.25s ease;
       }
       .sidebar.open { transform: translateX(0); }
-      .menu-btn { display: block; }
       .main { padding: 20px; }
-      .note-title { font-size: 1.5rem; }
-      .overlay {
-        display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.5); z-index: 99;
-      }
-      .overlay.active { display: block; }
+      .note-title { font-size: 1.4rem; }
+      .welcome-icon { font-size: 3rem; }
+      .welcome h2 { font-size: 1.2rem; }
     }
     
-    /* Scrollbar */
+    /* Desktop - sidebar всегда виден */
+    @media (min-width: 769px) {
+      .header { padding: 0 25px; height: 55px; }
+      .menu-btn { display: none !important; }
+    }
+    
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
   </style>
 </head>
 <body>
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="logo">FreeX</div>
+  <header class="header">
+    <div style="display:flex;align-items:center;gap:12px;">
       <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+      <div class="logo">FreeX</div>
     </div>
-    <div class="tabs">
-      <button class="tab active" onclick="switchZone('public', this)">🌐 Публичная</button>
-      <button class="tab" onclick="switchZone('private', this)"> Приватная</button>
-    </div>
-    <div class="search">
-      <input type="text" placeholder="Поиск..." oninput="searchNotes(this.value)">
-    </div>
-    <div class="notes-list" id="notesList">
-      <div class="empty-list">Загрузка...</div>
-    </div>
-  </aside>
+    <div style="font-size:0.85rem;color:var(--text-muted);" id="headerStatus"></div>
+  </header>
 
-  <main class="main" id="main">
-    <div class="welcome">
-      <div class="welcome-icon">📚</div>
-      <h2>FreeX — Твоя база знаний</h2>
-      <p>Нажми ☰ чтобы открыть список заметок<br>или создай новую через кнопку +</p>
-    </div>
-  </main>
+  <div class="container">
+    <aside class="sidebar" id="sidebar">
+      <div class="tabs">
+        <button class="tab active" onclick="switchZone('public', this)">🌐 Публичная</button>
+        <button class="tab" onclick="switchZone('private', this)">🔒 Приватная</button>
+      </div>
+      <div class="search">
+        <input type="text" placeholder="Поиск заметок..." oninput="searchNotes(this.value)">
+      </div>
+      <div class="notes-list" id="notesList">
+        <div class="empty-list">Загрузка...</div>
+      </div>
+    </aside>
+
+    <main class="main" id="main">
+      <div class="welcome">
+        <div class="welcome-icon">📚</div>
+        <h2>FreeX — Твоя база знаний</h2>
+        <p>Нажми <strong>☰</strong> чтобы открыть список заметок<br>или создай новую через кнопку <strong>+</strong></p>
+      </div>
+    </main>
+  </div>
 
   <button class="fab" onclick="location.href='/admin.html'">+</button>
   <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
@@ -150,14 +173,14 @@
     async function load() {
       try {
         const [p, r] = await Promise.all([
-          fetch('content/public.json').then(r => r.ok ? r.json() : []),
-          fetch('content/private.json').then(r => r.ok ? r.json() : [])
+          fetch('content/public.json').then(res => res.ok ? res.json() : []),
+          fetch('content/private.json').then(res => res.ok ? res.json() : [])
         ]);
-        notes = { public: p, private: r };
+        notes = { public: p || [], private: r || [] };
         filtered = { ...notes };
         render();
       } catch(e) {
-        document.getElementById('notesList').innerHTML = '<div class="empty-list">Ошибка загрузки</div>';
+        document.getElementById('notesList').innerHTML = '<div class="empty-list">Ошибка загрузки<br><small>Проверь файлы в content/</small></div>';
       }
     }
 
@@ -166,27 +189,27 @@
       const arr = filtered[currentZone] || [];
       
       if (!arr.length) {
-        list.innerHTML = `<div class="empty-list">Нет заметок<br><a href="/admin.html" style="color:var(--accent);display:inline-block;margin-top:8px;">Создать +</a></div>`;
+        list.innerHTML = `<div class="empty-list">Нет заметок в зоне<br><strong>${currentZone === 'public' ? '🌐 Публичная' : '🔒 Приватная'}</strong><br><a href="/admin.html">Создать первую +</a></div>`;
         return;
       }
 
       list.innerHTML = [...arr].sort((a,b) => b.id - a.id).map(n => `
-        <div class="note-item" onclick="open(${n.id})">
+        <div class="note-item" onclick="openNote(${n.id})">
           <div class="note-item-title">${esc(n.title)}</div>
-          <div class="note-item-preview">${esc(n.content.substring(0,50))}${n.content.length>50?'...':''}</div>
+          <div class="note-item-preview">${esc(n.content.substring(0,55))}${n.content.length>55?'...':''}</div>
           <div class="note-item-date">${n.date}</div>
         </div>
       `).join('');
     }
 
-    function open(id) {
+    function openNote(id) {
       const note = [...notes.public, ...notes.private].find(n => n.id === id);
       if (!note) return;
       
       document.getElementById('main').innerHTML = `
         <div class="note-content">
           <h1 class="note-title">${esc(note.title)}</h1>
-          <div class="note-meta">${note.date} • ${currentZone === 'public' ? '🌐 Публичная' : ' Приватная'}</div>
+          <div class="note-meta">📅 ${note.date} • ${currentZone === 'public' ? '🌐 Публичная' : '🔒 Приватная'}</div>
           <div class="note-body">${format(note.content)}</div>
         </div>
       `;
@@ -200,12 +223,20 @@
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       btn.classList.add('active');
       render();
+      if (window.innerWidth <= 768) toggleSidebar();
     }
 
-    function search(q) {
-      q = q.toLowerCase();
+    function searchNotes(q) {
+      q = q.toLowerCase().trim();
       ['public','private'].forEach(z => {
-        filtered[z] = q ? notes[z].filter(n => n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q)) : notes[z];
+        if (!q) {
+          filtered[z] = notes[z];
+        } else {
+          filtered[z] = notes[z].filter(n => 
+            n.title.toLowerCase().includes(q) || 
+            n.content.toLowerCase().includes(q)
+          );
+        }
       });
       render();
     }
@@ -215,8 +246,8 @@
       document.getElementById('overlay').classList.toggle('active');
     }
 
-    function format(t) {
-      let h = esc(t);
+    function format(text) {
+      let h = esc(text);
       h = h.replace(/### (.*$)/gim, '<h3>$1</h3>');
       h = h.replace(/## (.*$)/gim, '<h2>$1</h2>');
       h = h.replace(/# (.*$)/gim, '<h1>$1</h1>');
@@ -227,12 +258,13 @@
       return h;
     }
 
-    function esc(t) {
+    function esc(text) {
       const d = document.createElement('div');
-      d.textContent = t;
+      d.textContent = text;
       return d.innerHTML;
     }
 
+    // Инициализация
     load();
   </script>
 </body>
