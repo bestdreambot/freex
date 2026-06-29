@@ -1,940 +1,836 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>FreeX</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #0a0a0f;
-      color: #e0e0e0;
-      height: 100%;
-      overflow: hidden;
-      position: fixed;
-      width: 100%;
-    }
-    #app {
-      display: flex;
-      height: 100%;
-      width: 100%;
-      background: #0a0a0f;
-    }
-    .sidebar {
-      width: 280px;
-      min-width: 280px;
-      background: #111114;
-      border-right: 1px solid #1e1e24;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      position: fixed;
-      left: 0;
-      top: 0;
-      transform: translateX(-100%);
-      transition: transform 0.3s ease;
-      z-index: 100;
-    }
-    .sidebar.open {
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>FreeX</title>
+<style>
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :root {
+    --bg: #0a0a0e;
+    --surface: #111116;
+    --surface-2: #18181f;
+    --surface-3: #20202a;
+    --bubble-you: #1a2744;
+    --bubble-ai: #14141c;
+    --border: #282832;
+    --text: #ededf0;
+    --muted: #7a7a84;
+    --gold: #d4a04c;
+    --gold-dim: #d4a04c22;
+    --gold-glow: #d4a04c55;
+    --danger: #c75c5c;
+    --drawer-w: 290px;
+    --max-read: 720px;
+    --radius-lg: 20px;
+    --radius-md: 14px;
+    --radius-sm: 10px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    overflow: hidden;
+  }
+
+  .serif {
+    font-family: "Georgia", "Times New Roman", serif;
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+  /* ===== TOP BAR ===== */
+  .topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+    padding-top: var(--safe-top);
+    background: rgba(10, 10, 14, 0.82);
+    backdrop-filter: blur(16px) saturate(1.4);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .topbar .title {
+    flex: 1;
+    font-weight: 600;
+    font-size: 18px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.3px;
+  }
+  .topbar .title b { color: var(--gold); }
+
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .icon-btn:active { transform: scale(0.9); }
+  .icon-btn:hover { background: var(--surface-2); }
+
+  /* ===== DRAWER ===== */
+  .drawer {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--drawer-w);
+    z-index: 40;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.3, 0, 0, 1);
+    display: flex;
+    flex-direction: column;
+    padding-top: var(--safe-top);
+  }
+  .drawer.open { transform: translateX(0); }
+
+  .drawer-head {
+    padding: 18px 20px 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .drawer-head .brand { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+  .drawer-head .brand b { color: var(--gold); }
+  .drawer-head .brand-sub {
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+  }
+
+  .gold-rail {
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    margin: 6px 20px 6px;
+    border-radius: 2px;
+    opacity: 0.6;
+  }
+
+  .new-chat {
+    margin: 10px 16px 4px;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .new-chat:hover { border-color: var(--gold); background: var(--surface-3); }
+  .new-chat .plus {
+    color: var(--gold);
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px 6px;
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .section-label button {
+    width: 26px;
+    height: 26px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--gold-dim);
+    color: var(--gold);
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .section-label button:hover { background: var(--gold-glow); }
+
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0 10px;
+    overflow-y: auto;
+  }
+  .list.folder-list { flex: 0 0 auto; max-height: 24vh; }
+  .list.chat-list { flex: 1 1 auto; }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.18s;
+  }
+  .row:hover { background: var(--surface-2); }
+  .row.active { background: var(--gold-dim); }
+  .row.active .row-name { color: var(--gold); }
+
+  .row-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+  }
+  .row-act {
+    opacity: 0;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    flex: 0 0 auto;
+    transition: opacity 0.2s;
+  }
+  .row:hover .row-act,
+  .row.active .row-act { opacity: 1; }
+  .row-act:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+
+  .empty-hint {
+    padding: 10px 16px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+  }
+  .overlay.show { opacity: 1; pointer-events: auto; }
+
+  /* ===== CHAT ===== */
+  .chat {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    padding-top: var(--safe-top);
+  }
+
+  .feed {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 0 8px;
+    scroll-behavior: smooth;
+  }
+  .feed-inner {
+    max-width: var(--max-read);
+    margin: 0 auto;
+    padding: 0 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* ===== MESSAGES ===== */
+  .msg {
+    display: flex;
+    animation: slideUp 0.3s ease both;
+  }
+  .msg.you { justify-content: flex-end; }
+
+  .bubble {
+    max-width: 86%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 15px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    transition: all 0.2s;
+  }
+  .msg.you .bubble {
+    background: var(--bubble-you);
+    border-bottom-right-radius: 5px;
+  }
+  .msg.ai .bubble {
+    background: var(--bubble-ai);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 5px;
+  }
+  .msg.ai .who {
+    display: block;
+    color: var(--gold);
+    font-size: 12px;
+    margin-bottom: 3px;
+    letter-spacing: 0.03em;
+    font-weight: 500;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== TYPING ===== */
+  .typing {
+    display: flex;
+    gap: 6px;
+    padding: 4px 0;
+  }
+  .typing span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: pulse 1.4s infinite both;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse {
+    0%, 80%, 100% { opacity: 0.25; transform: scale(0.9); }
+    40% { opacity: 1; transform: scale(1.1); }
+  }
+
+  /* ===== WELCOME ===== */
+  .welcome {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 10px;
+    padding: 24px;
+    color: var(--muted);
+    min-height: 60vh;
+  }
+  .welcome .big {
+    font-size: 38px;
+    letter-spacing: -1px;
+  }
+  .welcome .big b { color: var(--gold); }
+  .welcome .sub {
+    font-size: 14px;
+    opacity: 0.7;
+    max-width: 320px;
+  }
+
+  /* ===== COMPOSER ===== */
+  .composer {
+    padding: 10px 16px calc(14px + var(--safe-bottom));
+    background: linear-gradient(180deg, transparent, var(--bg) 18%);
+  }
+  .composer-inner {
+    max-width: var(--max-read);
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 6px 6px 6px 18px;
+    transition: border-color 0.25s;
+  }
+  .composer-inner:focus-within { border-color: var(--gold); }
+
+  #input {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    resize: none;
+    max-height: 140px;
+    padding: 10px 0;
+    line-height: 1.45;
+    outline: none;
+  }
+  #input::placeholder { color: var(--muted); }
+
+  .send {
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 50%;
+    flex: 0 0 auto;
+    cursor: pointer;
+    background: var(--gold);
+    color: #1a1206;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, opacity 0.2s;
+  }
+  .send:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .send:not(:disabled):active { transform: scale(0.88); }
+
+  .hint {
+    max-width: var(--max-read);
+    margin: 6px auto 0;
+    color: var(--muted);
+    font-size: 11px;
+    text-align: center;
+    opacity: 0.6;
+  }
+
+  /* ===== DESKTOP ===== */
+  @media (min-width: 820px) {
+    .topbar #menuBtn { display: none; }
+    .drawer {
       transform: translateX(0);
+      border-right: 1px solid var(--border);
     }
-    .sidebar-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid #1e1e24;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .logo {
-      font-size: 1.2rem;
-      font-weight: 700;
-      background: linear-gradient(90deg, #00d4ff, #0099cc);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .icon-btn {
-      background: none;
-      border: none;
-      color: #888;
-      font-size: 1.2rem;
-      cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 8px;
-    }
-    .icon-btn:hover {
-      background: #1e1e24;
-      color: #fff;
-    }
-    .new-chat-btn {
-      margin: 12px 16px;
-      padding: 12px;
-      background: #1a1a24;
-      border: 1px solid #2a2a34;
-      border-radius: 12px;
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: center;
-    }
-    .search-box {
-      padding: 0 16px 12px;
-    }
-    .search-box input {
-      width: 100%;
-      padding: 10px 14px;
-      background: #1a1a24;
-      border: 1px solid #2a2a34;
-      border-radius: 10px;
-      color: #e0e0e0;
-      font-size: 0.9rem;
-      outline: none;
-    }
-    .search-box input:focus {
-      border-color: #00d4ff;
-    }
-    .folder-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0 12px 12px;
-    }
-    .folder-item {
-      margin-bottom: 4px;
-    }
-    .folder-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: #aaa;
-    }
-    .folder-header:hover {
-      background: #1a1a24;
-    }
-    .folder-header .folder-name {
-      flex: 1;
-    }
-    .folder-header .folder-actions button {
-      background: none;
-      border: none;
-      color: #666;
-      cursor: pointer;
-      font-size: 0.8rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-    .folder-header .folder-actions button:hover {
-      color: #fff;
-      background: #2a2a34;
-    }
-    .chat-item {
-      padding: 6px 12px 6px 28px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      color: #aaa;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .chat-item:hover {
-      background: #1a1a24;
-      color: #fff;
-    }
-    .chat-item.active {
-      background: #1a1a34;
-      color: #00d4ff;
-    }
-    .chat-item .chat-delete {
-      background: none;
-      border: none;
-      color: #555;
-      cursor: pointer;
-      font-size: 0.7rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-    .chat-item .chat-delete:hover {
-      color: #ff6b6b;
-      background: #2a1a1a;
-    }
-    .sidebar-footer {
-      padding: 12px 16px;
-      border-top: 1px solid #1e1e24;
-    }
-    .sidebar-footer button {
-      width: 100%;
-      padding: 10px;
-      background: none;
-      border: none;
-      color: #888;
-      text-align: left;
-      font-size: 0.9rem;
-      cursor: pointer;
-      border-radius: 8px;
-    }
-    .sidebar-footer button:hover {
-      background: #1a1a24;
-      color: #fff;
-    }
-    #main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      background: #0a0a0f;
-      min-width: 0;
-      overflow: hidden;
-      margin-left: 0;
-    }
-    .main-header {
-      display: flex;
-      align-items: center;
-      padding: 12px 16px;
-      border-bottom: 1px solid #1a1a20;
-      gap: 12px;
-      min-height: 56px;
-      flex-shrink: 0;
-    }
-    .main-header #openSidebar {
-      display: block;
-    }
-    #currentChatTitle {
-      font-weight: 600;
-      font-size: 0.95rem;
-      color: #e0e0e0;
-      flex: 1;
-    }
-    .messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      color: #555;
-      text-align: center;
-    }
-    .empty-state span {
-      font-size: 3rem;
-      margin-bottom: 12px;
-    }
-    .empty-state h2 {
-      color: #888;
-      font-weight: 400;
-    }
-    .empty-state p {
-      color: #444;
-      font-size: 0.9rem;
-    }
-    .message {
-      max-width: 85%;
-      padding: 12px 16px;
-      border-radius: 16px;
-      font-size: 0.95rem;
-      line-height: 1.5;
-      word-wrap: break-word;
-    }
-    .message.user {
-      align-self: flex-end;
-      background: #1a1a34;
-      border-bottom-right-radius: 4px;
-    }
-    .message.assistant {
-      align-self: flex-start;
-      background: #14141a;
-      border-bottom-left-radius: 4px;
-      border: 1px solid #1e1e24;
-    }
-    .message .msg-label {
-      font-size: 0.65rem;
-      color: #666;
-      margin-bottom: 4px;
-      font-weight: 500;
-    }
-    .message .msg-content {
-      white-space: pre-wrap;
-    }
-    .input-area {
-      padding: 12px 16px 16px;
-      border-top: 1px solid #1a1a20;
-      background: #0a0a0f;
-      flex-shrink: 0;
-    }
-    .model-selector {
-      margin-bottom: 8px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .model-selector label {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.8rem;
-      color: #aaa;
-      cursor: pointer;
-    }
-    .model-selector input[type="checkbox"] {
-      accent-color: #00d4ff;
-      width: 14px;
-      height: 14px;
-      cursor: pointer;
-    }
-    .input-row {
-      display: flex;
-      gap: 10px;
-      align-items: flex-end;
-    }
-    .input-row textarea {
-      flex: 1;
-      padding: 12px 16px;
-      background: #1a1a24;
-      border: 1px solid #2a2a34;
-      border-radius: 12px;
-      color: #e0e0e0;
-      font-size: 0.95rem;
-      resize: none;
-      outline: none;
-      font-family: inherit;
-      min-height: 48px;
-      max-height: 120px;
-    }
-    .input-row textarea:focus {
-      border-color: #00d4ff;
-    }
-    .input-row textarea::placeholder {
-      color: #555;
-    }
-    #sendBtn {
-      width: 48px;
-      height: 48px;
-      min-width: 48px;
-      border-radius: 12px;
-      border: none;
-      background: linear-gradient(90deg, #00d4ff, #0099cc);
-      color: #000;
-      font-size: 1.3rem;
-      cursor: pointer;
-    }
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 200;
-    }
-    .modal.hidden {
-      display: none;
-    }
-    .modal-content {
-      background: #14141a;
-      border: 1px solid #2a2a34;
-      border-radius: 20px;
-      padding: 24px;
-      width: 90%;
-      max-width: 400px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
-    .modal-body label {
-      display: block;
-      margin-top: 12px;
-      font-size: 0.8rem;
-      color: #888;
-    }
-    .modal-body input {
-      width: 100%;
-      padding: 10px 14px;
-      background: #1a1a24;
-      border: 1px solid #2a2a34;
-      border-radius: 10px;
-      color: #e0e0e0;
-      font-size: 0.9rem;
-      margin-top: 4px;
-      outline: none;
-    }
-    .modal-body input:focus {
-      border-color: #00d4ff;
-    }
-    .modal-body #saveKeys {
-      width: 100%;
-      padding: 12px;
-      margin-top: 18px;
-      background: linear-gradient(90deg, #00d4ff, #0099cc);
-      border: none;
-      border-radius: 12px;
-      color: #000;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    @media (max-width: 768px) {
-      .sidebar {
-        width: 280px;
-        transform: translateX(-100%);
-      }
-      .sidebar.open {
-        transform: translateX(0);
-      }
-    }
-    ::-webkit-scrollbar {
-      width: 4px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #2a2a34;
-      border-radius: 4px;
-    }
-  </style>
+    .overlay { display: none; }
+    .chat { left: var(--drawer-w); }
+    .topbar { left: var(--drawer-w); }
+  }
+
+  /* ===== REDUCE MOTION ===== */
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    .feed { scroll-behavior: auto; }
+  }
+</style>
 </head>
 <body>
 
-<div id="app">
+<header class="topbar">
+  <button id="menuBtn" class="icon-btn" aria-label="Меню">☰</button>
+  <div class="title serif" id="chatTitle">Free<b>X</b></div>
+  <button id="newTop" class="icon-btn" aria-label="Новый чат">✎</button>
+</header>
 
-  <!-- Меню -->
-  <aside id="sidebar" class="sidebar">
-    <div class="sidebar-header">
-      <span class="logo">FreeX</span>
-      <button id="closeSidebar" class="icon-btn">✕</button>
-    </div>
-    <button id="newChat" class="new-chat-btn">+ Новый чат</button>
-    <div class="search-box">
-      <input type="text" id="searchChats" placeholder="Поиск..." />
-    </div>
-    <div id="folderList" class="folder-list"></div>
-    <div class="sidebar-footer">
-      <button id="settingsBtn">⚙️ Настройки</button>
-      <button id="exportBtn" style="margin-top:6px;">📥 Экспорт</button>
-    </div>
-  </aside>
+<aside id="drawer" class="drawer" aria-label="Чаты и папки">
+  <div class="drawer-head">
+    <span class="brand serif">Free<b>X</b></span>
+    <span class="brand-sub">диалоги</span>
+  </div>
+  <div class="gold-rail"></div>
 
-  <!-- Основная часть -->
-  <main id="main">
-    <header class="main-header">
-      <button id="openSidebar" class="icon-btn">☰</button>
-      <span id="currentChatTitle">Новый чат</span>
-      <button id="deleteChat" class="icon-btn" style="color:#ff6b6b;">🗑</button>
-    </header>
+  <button class="new-chat" id="newChat"><span class="plus">+</span> Новый чат</button>
 
-    <div id="messages" class="messages">
-      <div class="empty-state">
-        <span>🐡</span>
-        <h2>FreeX</h2>
-        <p>Твой мобильный ИИ-стенд</p>
-        <p style="font-size:0.85rem; color:#666;">Напиши что-нибудь, чтобы начать</p>
-      </div>
-    </div>
+  <div class="section-label">Папки <button id="addFolder" aria-label="Новая папка">+</button></div>
+  <ul id="folderList" class="list folder-list"></ul>
 
-    <div class="input-area">
-      <div class="model-selector">
-        <label><input type="checkbox" id="model_deepseek" checked /> DeepSeek</label>
-        <label><input type="checkbox" id="model_grok_free" checked /> Grok</label>
-        <label><input type="checkbox" id="model_kimi_free" /> Kimi</label>
-        <label><input type="checkbox" id="model_gemini" /> Gemini</label>
-      </div>
-      <div class="input-row">
-        <textarea id="promptInput" rows="1" placeholder="Напиши сообщение..."></textarea>
-        <button id="sendBtn">➤</button>
-      </div>
-    </div>
-  </main>
+  <div class="section-label">Чаты</div>
+  <ul id="chatList" class="list chat-list"></ul>
+</aside>
 
-  <!-- Настройки -->
-  <div id="settingsModal" class="modal hidden">
-    <div class="modal-content">
-      <div class="modal-header">
-        <span>Настройки</span>
-        <button id="closeSettings" class="icon-btn">✕</button>
-      </div>
-      <div class="modal-body">
-        <p style="color:#999; font-size:0.85rem;">Ключи хранятся только в твоём браузере</p>
-        <label>DeepSeek</label>
-        <input type="password" id="keyDeepSeek" placeholder="sk-..." />
-        <label>Gemini</label>
-        <input type="password" id="keyGemini" placeholder="AIza..." />
-        <label>Groq</label>
-        <input type="password" id="keyGroq" placeholder="gsk_..." />
-        <label>Qwen</label>
-        <input type="password" id="keyQwen" placeholder="sk-..." />
-        <label>OpenRouter (Grok / Kimi)</label>
-        <input type="password" id="keyOpenRouter" placeholder="sk-or-v1-..." />
-        <button id="saveKeys">Сохранить</button>
-      </div>
+<div id="overlay" class="overlay"></div>
+
+<main class="chat">
+  <div class="feed" id="feed">
+    <div class="welcome" id="welcome">
+      <div class="big serif">Free<b>X</b></div>
+      <div class="sub">Начни диалог — напиши сообщение снизу.<br>Чаты сохраняются в меню слева.</div>
     </div>
+    <div class="feed-inner" id="feedInner" hidden></div>
   </div>
 
-</div>
+  <div class="composer">
+    <div class="composer-inner">
+      <textarea id="input" rows="1" placeholder="Сообщение…" aria-label="Сообщение"></textarea>
+      <button id="send" class="send" aria-label="Отправить" disabled>↑</button>
+    </div>
+    <div class="hint">⚡ Заглушка — ИИ подключим следующим шагом</div>
+  </div>
+</main>
 
 <script>
-  // ============================================================
-  //  КОНФИГ — только здесь добавляешь новые модели
-  // ============================================================
-  const MODELS = {
-    deepseek: {
-      name: 'DeepSeek',
-      provider: 'deepseek',
-      url: 'https://api.deepseek.com/v1/chat/completions',
-      keyEnv: 'keyDeepSeek',
-      model: 'deepseek-chat',
-      maxTokens: 1500,
-      temperature: 0.7,
-      requiresKey: true
-    },
-    gemini: {
-      name: 'Gemini',
-      provider: 'gemini',
-      url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
-      keyEnv: 'keyGemini',
-      model: 'gemini-2.0-flash',
-      maxTokens: 1500,
-      temperature: 0.7,
-      requiresKey: true
-    },
-    groq: {
-      name: 'Groq',
-      provider: 'groq',
-      url: 'https://api.groq.com/openai/v1/chat/completions',
-      keyEnv: 'keyGroq',
-      model: 'llama-3.3-70b-versatile',
-      maxTokens: 1500,
-      temperature: 0.7,
-      requiresKey: true
-    },
-    qwen: {
-      name: 'Qwen',
-      provider: 'qwen',
-      url: 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation',
-      keyEnv: 'keyQwen',
-      model: 'qwen-plus',
-      maxTokens: 1500,
-      temperature: 0.7,
-      requiresKey: true
-    },
-    grok_free: {
-      name: 'Grok (Free)',
-      provider: 'openrouter',
-      url: 'https://openrouter.ai/api/v1/chat/completions',
-      keyEnv: 'keyOpenRouter',
-      model: 'x-ai/grok-4-fast:free',
-      maxTokens: 1500,
-      temperature: 0.7,
-      requiresKey: true
-    },
-    kimi_free: {
-      name: 'Kimi (Free)',
-      provider: 'openrouter',
-      url: 'https://openrouter.ai/api/v1/chat/completions',
-      keyEnv: 'keyOpenRouter',
-      model: 'moonshotai/kimi-k2.7:free',
-      maxTokens: 1500,
-      temperature: 0.7,
-      requiresKey: true
+(function(){
+  "use strict";
+
+  const STORAGE_KEY = "freex_chat_v1";
+
+  // ----- STATE -----
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (_) {}
+    return { folders: [], chats: [], activeFolder: null, activeChat: null };
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (_) {
+      alert("Не удалось сохранить локально — возможно, хранилище переполнено.");
     }
+  }
+
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  const state = load();
+
+  // ----- DOM refs -----
+  const drawer = document.getElementById("drawer");
+  const overlay = document.getElementById("overlay");
+  const folderList = document.getElementById("folderList");
+  const chatList = document.getElementById("chatList");
+  const feed = document.getElementById("feed");
+  const feedInner = document.getElementById("feedInner");
+  const welcome = document.getElementById("welcome");
+  const input = document.getElementById("input");
+  const sendBtn = document.getElementById("send");
+  const chatTitle = document.getElementById("chatTitle");
+
+  // ----- Drawer -----
+  function openDrawer() { drawer.classList.add("open"); overlay.classList.add("show"); }
+  function closeDrawer() { drawer.classList.remove("open"); overlay.classList.remove("show"); }
+  document.getElementById("menuBtn").onclick = openDrawer;
+  overlay.onclick = closeDrawer;
+
+  function activeChatObj() {
+    return state.chats.find(c => c.id === state.activeChat) || null;
+  }
+
+  // ----- New chat -----
+  function newChat() {
+    const c = {
+      id: uid(),
+      folderId: state.activeFolder || null,
+      title: "Новый чат",
+      messages: [],
+      updated: Date.now()
+    };
+    state.chats.push(c);
+    state.activeChat = c.id;
+    save();
+    renderAll();
+    input.focus();
+    if (window.innerWidth < 820) closeDrawer();
+  }
+  document.getElementById("newChat").onclick = newChat;
+  document.getElementById("newTop").onclick = newChat;
+
+  // ----- Folders -----
+  document.getElementById("addFolder").onclick = function() {
+    const name = prompt("Название папки:");
+    if (name === null) return;
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const f = { id: uid(), name: trimmed };
+    state.folders.push(f);
+    state.activeFolder = f.id;
+    save();
+    renderAll();
   };
 
-  const DEFAULT_FOLDERS = [
-    { id: 'inbox', name: '📥 Входящие' },
-    { id: 'work', name: '💼 Work' },
-    { id: 'ideas', name: '💡 Идеи' }
-  ];
-
-  // ============================================================
-  //  ВСЯ ЛОГИКА
-  // ============================================================
-  let state = { chats: [], folders: [], currentChatId: null };
-
-  function $(s) { return document.querySelector(s); }
-  function $$(s) { return document.querySelectorAll(s); }
-
-  function loadState() {
-    const saved = localStorage.getItem('freex_state');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        state = parsed;
-        if (!state.chats) state.chats = [];
-        if (!state.folders) state.folders = JSON.parse(JSON.stringify(DEFAULT_FOLDERS));
-        return;
-      } catch (e) {}
-    }
-    state.chats = [];
-    state.folders = JSON.parse(JSON.stringify(DEFAULT_FOLDERS));
-    state.currentChatId = null;
-  }
-
-  function saveState() {
-    localStorage.setItem('freex_state', JSON.stringify(state));
-  }
-
-  function loadKeys() {
-    ['keyDeepSeek','keyGemini','keyGroq','keyQwen','keyOpenRouter'].forEach(k => {
-      const v = localStorage.getItem(k);
-      if (v) { const el = document.getElementById(k); if (el) el.value = v; }
-    });
-  }
-
-  function saveKeys() {
-    ['keyDeepSeek','keyGemini','keyGroq','keyQwen','keyOpenRouter'].forEach(k => {
-      const el = document.getElementById(k);
-      if (el) localStorage.setItem(k, el.value.trim());
-    });
-    document.getElementById('settingsModal').classList.add('hidden');
-  }
-
-  function getKey(provider) {
-    const map = {
-      deepseek:'keyDeepSeek', gemini:'keyGemini', groq:'keyGroq',
-      qwen:'keyQwen', openrouter:'keyOpenRouter'
-    };
-    return localStorage.getItem(map[provider]) || '';
-  }
-
-  function createChat(title) {
-    const chat = { id: 'chat_' + Date.now(), title: title || 'Новый чат', messages: [], folderId: null };
-    state.chats.push(chat);
-    state.currentChatId = chat.id;
-    saveState();
-    return chat;
-  }
-
-  function getCurrentChat() {
-    return state.chats.find(c => c.id === state.currentChatId) || null;
-  }
-
-  function deleteChatById(id) {
-    state.chats = state.chats.filter(c => c.id !== id);
-    if (state.currentChatId === id) {
-      state.currentChatId = state.chats.length > 0 ? state.chats[0].id : null;
-    }
-    saveState();
-  }
-
-  function switchChat(id) {
-    state.currentChatId = id;
-    saveState();
-  }
-
-  function addMessage(role, content) {
-    const chat = getCurrentChat();
-    if (!chat) return;
-    chat.messages.push({ role, content, timestamp: Date.now() });
-    saveState();
-  }
-
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  async function callModel(config, prompt) {
-    const key = getKey(config.provider);
-    const res = await fetch(config.url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-      body: JSON.stringify({
-        model: config.model,
-        messages: [{ role: 'user', content: prompt }],
-        temperature: config.temperature,
-        max_tokens: config.maxTokens
-      })
-    });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message || 'Ошибка API');
-    return data.choices[0].message.content;
-  }
-
-  async function callGemini(config, prompt, key) {
-    const res = await fetch(config.url + '?key=' + key, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: config.temperature, maxOutputTokens: config.maxTokens }
-      })
-    });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message || 'Ошибка Gemini');
-    return data.candidates[0].content.parts[0].text;
-  }
-
-  async function callQwen(config, prompt, key) {
-    const res = await fetch(config.url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-      body: JSON.stringify({
-        model: config.model,
-        input: { messages: [{ role: 'user', content: prompt }] },
-        parameters: { temperature: config.temperature, max_tokens: config.maxTokens }
-      })
-    });
-    const data = await res.json();
-    if (data.code) throw new Error(data.message || 'Ошибка Qwen');
-    return data.output.choices[0].message.content;
-  }
-
-  async function callOpenRouter(config, prompt, key) {
-    const res = await fetch(config.url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-      body: JSON.stringify({
-        model: config.model,
-        messages: [{ role: 'user', content: prompt }],
-        temperature: config.temperature,
-        max_tokens: config.maxTokens
-      })
-    });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message || 'Ошибка OpenRouter');
-    return data.choices[0].message.content;
-  }
-
-  async function sendToMultipleModels(prompt, modelList) {
-    const results = await Promise.all(
-      modelList.map(async (key) => {
-        const config = MODELS[key];
-        if (!config) return { model: key, error: 'Модель не найдена' };
-        try {
-          let response;
-          if (config.provider === 'gemini') {
-            response = await callGemini(config, prompt, getKey('gemini'));
-          } else if (config.provider === 'qwen') {
-            response = await callQwen(config, prompt, getKey('qwen'));
-          } else if (config.provider === 'openrouter') {
-            response = await callOpenRouter(config, prompt, getKey('openrouter'));
-          } else {
-            response = await callModel(config, prompt);
-          }
-          return { model: config.name, response };
-        } catch (e) {
-          return { model: config.name, error: e.message };
-        }
-      })
-    );
-    return results;
-  }
-
-  function exportData() {
-    const data = localStorage.getItem('freex_state');
-    const blob = new Blob([data], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'freex_backup_' + new Date().toISOString().slice(0,10) + '.json';
-    a.click();
-  }
-
-  // ============================================================
-  //  UI
-  // ============================================================
-  function renderMessages() {
-    const chat = getCurrentChat();
-    const el = document.getElementById('messages');
-    el.innerHTML = '';
-    if (!chat || !chat.messages.length) {
-      el.innerHTML = `
-        <div class="empty-state">
-          <span>🐡</span>
-          <h2>FreeX</h2>
-          <p>Твой мобильный ИИ-стенд</p>
-          <p style="font-size:0.85rem; color:#666;">Напиши что-нибудь, чтобы начать</p>
-        </div>
-      `;
-      return;
-    }
-    chat.messages.forEach(m => {
-      const div = document.createElement('div');
-      div.className = 'message ' + m.role;
-      div.innerHTML = `<div class="msg-label">${m.role === 'user' ? '👤 Вы' : '🤖 ИИ'}</div><div class="msg-content">${escapeHtml(m.content)}</div>`;
-      el.appendChild(div);
-    });
-    el.scrollTop = el.scrollHeight;
-  }
-
-  function updateTitle() {
-    const chat = getCurrentChat();
-    document.getElementById('currentChatTitle').textContent = chat ? chat.title : 'Новый чат';
-  }
-
-  function renderSidebar() {
-    const search = document.getElementById('searchChats').value.toLowerCase();
-    const map = {};
-    state.folders.forEach(f => map[f.id] = { ...f, chats: [] });
-    const noFolder = [];
-    state.chats.forEach(c => {
-      if (search && !c.title.toLowerCase().includes(search)) return;
-      if (c.folderId && map[c.folderId]) map[c.folderId].chats.push(c);
-      else noFolder.push(c);
-    });
-
-    let html = '';
-    state.folders.forEach(f => {
-      const folder = map[f.id];
-      if (!folder || !folder.chats.length) return;
-      html += `<div class="folder-item">`;
-      html += `<div class="folder-header"><span class="folder-name">${escapeHtml(f.name)}</span><div class="folder-actions"><button onclick="window._renameFolder('${f.id}')">✎</button><button onclick="window._deleteFolder('${f.id}')">✕</button></div></div>`;
-      folder.chats.forEach(c => {
-        html += `<div class="chat-item ${c.id === state.currentChatId ? 'active' : ''}" data-id="${c.id}"><span>${escapeHtml(c.title)}</span><button class="chat-delete" data-id="${c.id}">✕</button></div>`;
-      });
-      html += `</div>`;
-    });
-    if (noFolder.length) {
-      html += `<div class="folder-item"><div class="folder-header"><span class="folder-name">📁 Без папки</span></div>`;
-      noFolder.forEach(c => {
-        html += `<div class="chat-item ${c.id === state.currentChatId ? 'active' : ''}" data-id="${c.id}"><span>${escapeHtml(c.title)}</span><button class="chat-delete" data-id="${c.id}">✕</button></div>`;
-      });
-      html += `</div>`;
-    }
-    document.getElementById('folderList').innerHTML = html;
-
-    document.querySelectorAll('.chat-item').forEach(el => {
-      el.addEventListener('click', e => {
-        if (e.target.classList.contains('chat-delete')) return;
-        switchChat(el.dataset.id);
-        renderMessages();
-        updateTitle();
-        renderSidebar();
-        if (window.innerWidth <= 768) closeSidebar();
-      });
-      const del = el.querySelector('.chat-delete');
-      if (del) del.addEventListener('click', e => {
-        e.stopPropagation();
-        if (confirm('Удалить чат?')) {
-          deleteChatById(del.dataset.id);
-          renderSidebar();
-          renderMessages();
-          updateTitle();
-        }
-      });
-    });
-  }
-
-  window._renameFolder = function(id) {
+  function renameFolder(id) {
     const f = state.folders.find(x => x.id === id);
     if (!f) return;
-    const n = prompt('Новое имя:', f.name);
-    if (n && n.trim()) { f.name = n.trim(); saveState(); renderSidebar(); }
-  };
+    const name = prompt("Переименовать папку:", f.name);
+    if (name === null) return;
+    const trimmed = name.trim();
+    if (trimmed) f.name = trimmed;
+    save();
+    renderAll();
+  }
 
-  window._deleteFolder = function(id) {
-    if (!confirm('Удалить папку?')) return;
+  function deleteFolder(id) {
+    const f = state.folders.find(x => x.id === id);
+    if (!f) return;
+    if (!confirm(`Удалить папку «${f.name}»? Чаты останутся без папки.`)) return;
     state.folders = state.folders.filter(x => x.id !== id);
     state.chats.forEach(c => { if (c.folderId === id) c.folderId = null; });
-    saveState();
-    renderSidebar();
-  };
-
-  function openSidebar() {
-    document.getElementById('sidebar').classList.add('open');
+    if (state.activeFolder === id) state.activeFolder = null;
+    save();
+    renderAll();
   }
 
-  function closeSidebar() {
-    document.getElementById('sidebar').classList.remove('open');
+  // ----- Chat actions -----
+  function deleteChat(id) {
+    const c = state.chats.find(x => x.id === id);
+    if (!c) return;
+    if (!confirm("Удалить этот чат?")) return;
+    state.chats = state.chats.filter(x => x.id !== id);
+    if (state.activeChat === id) state.activeChat = null;
+    save();
+    renderAll();
   }
 
-  async function sendMessage() {
-    const text = document.getElementById('promptInput').value.trim();
+  // ----- Send -----
+  function autosize() {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 140) + "px";
+  }
+
+  function refreshSend() {
+    sendBtn.disabled = input.value.trim() === "";
+  }
+
+  input.addEventListener("input", function() {
+    autosize();
+    refreshSend();
+  });
+
+  input.addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  sendBtn.onclick = sendMessage;
+
+  function sendMessage() {
+    const text = input.value.trim();
     if (!text) return;
 
-    let chat = getCurrentChat();
-    if (!chat) { chat = createChat('Новый чат'); saveState(); }
+    let c = activeChatObj();
+    if (!c) {
+      newChat();
+      c = activeChatObj();
+    }
 
-    addMessage('user', text);
-    document.getElementById('promptInput').value = '';
-    renderMessages();
+    c.messages.push({ role: "you", text: text, t: Date.now() });
+    if (c.title === "Новый чат") {
+      c.title = text.slice(0, 40);
+    }
+    c.updated = Date.now();
 
-    const models = [];
-    document.querySelectorAll('.model-selector input:checked').forEach(el => {
-      models.push(el.id.replace('model_', ''));
+    input.value = "";
+    autosize();
+    refreshSend();
+    save();
+
+    renderFeed();
+    renderChats();
+    chatTitle.textContent = c.title;
+
+    showTyping(c);
+  }
+
+  function showTyping(chat) {
+    const row = document.createElement("div");
+    row.className = "msg ai";
+    row.id = "typingRow";
+    row.innerHTML = `
+      <div class="bubble">
+        <span class="who">FreeX</span>
+        <div class="typing"><span></span><span></span><span></span></div>
+      </div>
+    `;
+    feedInner.appendChild(row);
+    scrollDown();
+
+    setTimeout(() => {
+      const el = document.getElementById("typingRow");
+      if (el) el.remove();
+
+      const last = chat.messages[chat.messages.length - 1];
+      const reply =
+        `Принял: «${last ? last.text : ""}».\n\n` +
+        `Это отклик-заглушка — живой ИИ подключим следующим шагом. ` +
+        `Динамика и вид диалога уже на месте.`;
+
+      chat.messages.push({ role: "ai", text: reply, t: Date.now() });
+      chat.updated = Date.now();
+      save();
+      renderFeed();
+    }, 1000);
+  }
+
+  function scrollDown() {
+    feed.scrollTop = feed.scrollHeight;
+  }
+
+  // ----- Renderers -----
+  function renderFolders() {
+    folderList.innerHTML = "";
+
+    const allRow = document.createElement("li");
+    allRow.className = "row" + (state.activeFolder === null ? " active" : "");
+    allRow.innerHTML = `<span class="row-name">Все чаты</span>`;
+    allRow.onclick = function() {
+      state.activeFolder = null;
+      save();
+      renderAll();
+    };
+    folderList.appendChild(allRow);
+
+    state.folders.forEach(f => {
+      const li = document.createElement("li");
+      li.className = "row" + (f.id === state.activeFolder ? " active" : "");
+
+      const name = document.createElement("span");
+      name.className = "row-name";
+      name.textContent = f.name;
+      name.onclick = function() {
+        state.activeFolder = f.id;
+        save();
+        renderAll();
+      };
+
+      const ren = document.createElement("button");
+      ren.className = "row-act";
+      ren.textContent = "✎";
+      ren.onclick = function(e) { e.stopPropagation(); renameFolder(f.id); };
+
+      const del = document.createElement("button");
+      del.className = "row-act";
+      del.textContent = "🗑";
+      del.onclick = function(e) { e.stopPropagation(); deleteFolder(f.id); };
+
+      li.appendChild(name);
+      li.appendChild(ren);
+      li.appendChild(del);
+      folderList.appendChild(li);
     });
+  }
 
-    if (!models.length) {
-      addMessage('assistant', '⚠️ Выбери хотя бы одну модель.');
-      renderMessages();
+  function chatsInView() {
+    return state.chats
+      .filter(c => state.activeFolder === null ? true : c.folderId === state.activeFolder)
+      .sort((a, b) => b.updated - a.updated);
+  }
+
+  function renderChats() {
+    chatList.innerHTML = "";
+    const list = chatsInView();
+
+    if (list.length === 0) {
+      const h = document.createElement("div");
+      h.className = "empty-hint";
+      h.textContent = "Чатов пока нет — нажми «Новый чат»";
+      chatList.appendChild(h);
       return;
     }
 
-    for (const key of models) {
-      const cfg = MODELS[key];
-      if (cfg && cfg.requiresKey && !getKey(cfg.provider)) {
-        addMessage('assistant', `⚠️ Нет ключа для ${cfg.name}. Добавь в настройках.`);
-        renderMessages();
-        return;
-      }
-    }
+    list.forEach(c => {
+      const li = document.createElement("li");
+      li.className = "row" + (c.id === state.activeChat ? " active" : "");
 
-    const chatObj = getCurrentChat();
-    models.forEach(key => {
-      const cfg = MODELS[key];
-      if (cfg) chatObj.messages.push({ role: 'assistant', content: `⏳ ${cfg.name} думает...`, timestamp: Date.now() });
+      const name = document.createElement("span");
+      name.className = "row-name";
+      name.textContent = c.title || "Новый чат";
+      name.onclick = function() {
+        state.activeChat = c.id;
+        save();
+        renderFeed();
+        renderChats();
+        chatTitle.textContent = c.title || "FreeX";
+        if (window.innerWidth < 820) closeDrawer();
+      };
+
+      const del = document.createElement("button");
+      del.className = "row-act";
+      del.textContent = "🗑";
+      del.onclick = function(e) {
+        e.stopPropagation();
+        deleteChat(c.id);
+      };
+
+      li.appendChild(name);
+      li.appendChild(del);
+      chatList.appendChild(li);
     });
-    saveState();
-    renderMessages();
-
-    try {
-      const results = await sendToMultipleModels(text, models);
-      const msgs = chatObj.messages;
-      let idx = msgs.length - models.length;
-      results.forEach(r => {
-        if (idx < msgs.length) {
-          msgs[idx].content = r.error ? `❌ ${r.model}: ${r.error}` : `🤖 **${r.model}**\n\n${r.response}`;
-          idx++;
-        }
-      });
-      saveState();
-      renderMessages();
-    } catch (e) {
-      addMessage('assistant', `❌ Ошибка: ${e.message}`);
-      renderMessages();
-    }
   }
 
-  function setupEvents() {
-    document.getElementById('sendBtn').addEventListener('click', sendMessage);
-    document.getElementById('promptInput').addEventListener('keydown', e => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-    });
-    document.getElementById('openSidebar').addEventListener('click', openSidebar);
-    document.getElementById('closeSidebar').addEventListener('click', closeSidebar);
-    document.getElementById('newChat').addEventListener('click', () => {
-      createChat('Новый чат');
-      renderSidebar();
-      renderMessages();
-      updateTitle();
-    });
-    document.getElementById('deleteChat').addEventListener('click', () => {
-      if (!state.currentChatId) return;
-      if (confirm('Удалить чат?')) {
-        deleteChatById(state.currentChatId);
-        renderSidebar();
-        renderMessages();
-        updateTitle();
+  function renderFeed() {
+    const c = activeChatObj();
+
+    if (!c || c.messages.length === 0) {
+      welcome.hidden = false;
+      feedInner.hidden = true;
+      feedInner.innerHTML = "";
+      if (c) chatTitle.textContent = c.title || "FreeX";
+      else chatTitle.innerHTML = "Free<b>X</b>";
+      return;
+    }
+
+    welcome.hidden = true;
+    feedInner.hidden = false;
+    feedInner.innerHTML = "";
+
+    c.messages.forEach(m => {
+      const row = document.createElement("div");
+      row.className = "msg " + (m.role === "you" ? "you" : "ai");
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+
+      if (m.role === "ai") {
+        const who = document.createElement("span");
+        who.className = "who";
+        who.textContent = "FreeX";
+        bubble.appendChild(who);
+        bubble.appendChild(document.createTextNode(m.text));
+      } else {
+        bubble.textContent = m.text;
       }
+
+      row.appendChild(bubble);
+      feedInner.appendChild(row);
     });
-    document.getElementById('searchChats').addEventListener('input', renderSidebar);
-    document.getElementById('
+
+    chatTitle.textContent = c.title || "FreeX";
+    scrollDown();
+  }
+
+  function renderAll() {
+    renderFolders();
+    renderChats();
+    renderFeed();
+  }
+
+  // ----- INIT -----
+  renderAll();
+  refreshSend();
+  autosize();
+})();
+</script>
+</body>
+</html>
