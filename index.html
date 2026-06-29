@@ -1,366 +1,309 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>FreeX</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
 
 <div id="app">
-  <!-- SIDEBAR -->
-  <div id="sidebar" class="sidebar closed">
+
+  <!-- Боковое меню -->
+  <aside id="sidebar">
     <div class="sidebar-header">
       <span class="logo">FreeX</span>
       <button id="closeSidebar" class="icon-btn">✕</button>
     </div>
     <button id="newChat" class="new-chat-btn">+ Новый чат</button>
-    <div class="search-box">
-      <input type="text" id="searchChats" placeholder="Поиск...">
-    </div>
-    <div id="folderList" class="folder-list"></div>
+    <input type="text" id="searchChats" placeholder="Поиск..." />
+    <div id="folderList"></div>
     <div class="sidebar-footer">
       <button id="settingsBtn">⚙️ Настройки</button>
-      <button id="exportBtn" style="margin-top:6px;">📥 Экспорт</button>
+      <button id="exportBtn">📥 Экспорт</button>
     </div>
-  </div>
+  </aside>
 
-  <!-- MAIN -->
-  <div id="main">
-    <div class="main-header">
+  <!-- Основная область -->
+  <main id="main">
+    <header class="main-header">
       <button id="openSidebar" class="icon-btn">☰</button>
       <span id="currentChatTitle">Новый чат</span>
-      <span style="flex:1"></span>
       <button id="deleteChat" class="icon-btn" style="color:#ff6b6b;">🗑</button>
-    </div>
+    </header>
 
-    <div id="messages" class="messages">
+    <div id="messages">
       <div class="empty-state">
         <span>🐡</span>
         <h2>FreeX</h2>
         <p>Твой мобильный ИИ-стенд</p>
-        <p style="font-size:0.85rem; color:#666;">Напиши что-нибудь, чтобы начать</p>
       </div>
     </div>
 
     <div class="input-area">
       <div class="model-selector">
-        <label><input type="checkbox" id="model_deepseek" checked> DeepSeek</label>
-        <label><input type="checkbox" id="model_grok_free" checked> Grok</label>
-        <label><input type="checkbox" id="model_kimi_free"> Kimi</label>
-        <label><input type="checkbox" id="model_gemini"> Gemini</label>
+        <label><input type="checkbox" id="model_deepseek" checked /> DeepSeek</label>
+        <label><input type="checkbox" id="model_grok_free" checked /> Grok</label>
+        <label><input type="checkbox" id="model_kimi_free" /> Kimi</label>
+        <label><input type="checkbox" id="model_gemini" /> Gemini</label>
       </div>
       <div class="input-row">
         <textarea id="promptInput" rows="1" placeholder="Напиши сообщение..."></textarea>
         <button id="sendBtn">➤</button>
       </div>
     </div>
-  </div>
+  </main>
 
-  <!-- SETTINGS MODAL -->
+  <!-- Модалка настроек -->
   <div id="settingsModal" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
         <span>Настройки</span>
-        <button class="icon-btn" id="closeSettings">✕</button>
+        <button id="closeSettings" class="icon-btn">✕</button>
       </div>
       <div class="modal-body">
-        <p style="color:#999; font-size:0.85rem;">API ключи хранятся только в твоём браузере</p>
+        <p style="color:#999; font-size:0.85rem;">Ключи хранятся только в твоём браузере</p>
         <label>DeepSeek</label>
-        <input type="password" id="keyDeepSeek" placeholder="sk-...">
+        <input type="password" id="keyDeepSeek" placeholder="sk-..." />
         <label>Gemini</label>
-        <input type="password" id="keyGemini" placeholder="AIza...">
+        <input type="password" id="keyGemini" placeholder="AIza..." />
         <label>Groq</label>
-        <input type="password" id="keyGroq" placeholder="gsk_...">
+        <input type="password" id="keyGroq" placeholder="gsk_..." />
         <label>Qwen</label>
-        <input type="password" id="keyQwen" placeholder="sk-...">
-        <label>OpenRouter (Grok/Kimi)</label>
-        <input type="password" id="keyOpenRouter" placeholder="sk-or-v1-...">
+        <input type="password" id="keyQwen" placeholder="sk-..." />
+        <label>OpenRouter (Grok / Kimi)</label>
+        <input type="password" id="keyOpenRouter" placeholder="sk-or-v1-..." />
         <button id="saveKeys">Сохранить</button>
       </div>
     </div>
   </div>
+
 </div>
 
 <script src="core.js"></script>
 <script>
-// ============================================================
-//  APP — ЛЁГКИЙ СЛОЙ, ТОЛЬКО ВЫЗОВЫ
-// ============================================================
+  (function() {
+    const $ = s => document.querySelector(s);
+    const $$ = s => document.querySelectorAll(s);
 
-(function() {
-  'use strict';
+    const sidebar = $('#sidebar');
+    const folderList = $('#folderList');
+    const messages = $('#messages');
+    const promptInput = $('#promptInput');
+    const sendBtn = $('#sendBtn');
+    const openSidebar = $('#openSidebar');
+    const closeSidebar = $('#closeSidebar');
+    const newChatBtn = $('#newChat');
+    const deleteChatBtn = $('#deleteChat');
+    const currentChatTitle = $('#currentChatTitle');
+    const searchInput = $('#searchChats');
+    const settingsBtn = $('#settingsBtn');
+    const settingsModal = $('#settingsModal');
+    const closeSettings = $('#closeSettings');
+    const saveKeysBtn = $('#saveKeys');
+    const exportBtn = $('#exportBtn');
 
-  const sidebar = $('#sidebar');
-  const folderList = $('#folderList');
-  const messages = $('#messages');
-  const promptInput = $('#promptInput');
-  const sendBtn = $('#sendBtn');
-  const openSidebar = $('#openSidebar');
-  const closeSidebar = $('#closeSidebar');
-  const newChatBtn = $('#newChat');
-  const deleteChatBtn = $('#deleteChat');
-  const currentChatTitle = $('#currentChatTitle');
-  const searchInput = $('#searchChats');
-  const settingsBtn = $('#settingsBtn');
-  const settingsModal = $('#settingsModal');
-  const closeSettings = $('#closeSettings');
-  const saveKeysBtn = $('#saveKeys');
-  const exportBtn = $('#exportBtn');
-
-  function init() {
-    loadState();
-    loadKeys();
-    renderSidebar();
-    renderMessages();
-    setupEventListeners();
-    if (state.chats.length === 0) createChat('Новый чат');
-    if (state.currentChatId === null && state.chats.length > 0) {
-      state.currentChatId = state.chats[0].id;
+    function init() {
+      loadState();
+      loadKeys();
+      renderSidebar();
+      renderMessages();
+      setupEvents();
+      if (!state.chats.length) createChat('Новый чат');
+      if (!state.currentChatId && state.chats.length) state.currentChatId = state.chats[0].id;
+      renderMessages();
+      updateTitle();
+      autoResize();
     }
-    renderMessages();
-    updateChatTitle();
-    autoResizeTextarea();
-  }
 
-  function renderMessages() {
-    const chat = getCurrentChat();
-    messages.innerHTML = '';
-    if (!chat || chat.messages.length === 0) {
-      messages.innerHTML = `
-        <div class="empty-state">
-          <span>🐡</span>
-          <h2>FreeX</h2>
-          <p>Твой мобильный ИИ-стенд</p>
-          <p style="font-size:0.85rem; color:#666;">Напиши что-нибудь, чтобы начать</p>
-        </div>
-      `;
-      return;
-    }
-    chat.messages.forEach(msg => {
-      const div = document.createElement('div');
-      div.className = 'message ' + msg.role;
-      div.innerHTML = `
-        <div class="msg-label">${msg.role === 'user' ? '👤 Вы' : '🤖 ИИ'}</div>
-        <div class="msg-content">${escapeHtml(msg.content)}</div>
-      `;
-      messages.appendChild(div);
-    });
-    messages.scrollTop = messages.scrollHeight;
-  }
-
-  function updateChatTitle() {
-    const chat = getCurrentChat();
-    currentChatTitle.textContent = chat ? chat.title : 'Новый чат';
-  }
-
-  function renderSidebar() {
-    const searchTerm = searchInput.value.toLowerCase();
-    const folderMap = {};
-    state.folders.forEach(f => { folderMap[f.id] = { ...f, chats: [] }; });
-    const noFolderChats = [];
-    state.chats.forEach(chat => {
-      const title = chat.title.toLowerCase();
-      if (searchTerm && !title.includes(searchTerm)) return;
-      if (chat.folderId && folderMap[chat.folderId]) {
-        folderMap[chat.folderId].chats.push(chat);
-      } else {
-        noFolderChats.push(chat);
+    function renderMessages() {
+      const chat = getCurrentChat();
+      messages.innerHTML = '';
+      if (!chat || !chat.messages.length) {
+        messages.innerHTML = `<div class="empty-state"><span>🐡</span><h2>FreeX</h2><p>Твой мобильный ИИ-стенд</p></div>`;
+        return;
       }
-    });
-    let html = '';
-    state.folders.forEach(f => {
-      const folder = folderMap[f.id];
-      if (!folder || folder.chats.length === 0) return;
-      html += `<div class="folder-item">`;
-      html += `<div class="folder-header"><span class="folder-name">${escapeHtml(f.name)}</span><div class="folder-actions"><button onclick="window._renameFolder('${f.id}')">✎</button><button onclick="window._deleteFolder('${f.id}')">✕</button></div></div>`;
-      folder.chats.forEach(chat => {
-        const active = chat.id === state.currentChatId ? 'active' : '';
-        html += `<div class="chat-item ${active}" data-chatid="${chat.id}"><span>${escapeHtml(chat.title)}</span><button class="chat-delete" data-chatid="${chat.id}">✕</button></div>`;
+      chat.messages.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'message ' + m.role;
+        div.innerHTML = `<div class="msg-label">${m.role === 'user' ? '👤 Вы' : '🤖 ИИ'}</div><div class="msg-content">${escapeHtml(m.content)}</div>`;
+        messages.appendChild(div);
       });
-      html += `</div>`;
-    });
-    if (noFolderChats.length > 0) {
-      html += `<div class="folder-item"><div class="folder-header"><span class="folder-name">📁 Без папки</span></div>`;
-      noFolderChats.forEach(chat => {
-        const active = chat.id === state.currentChatId ? 'active' : '';
-        html += `<div class="chat-item ${active}" data-chatid="${chat.id}"><span>${escapeHtml(chat.title)}</span><button class="chat-delete" data-chatid="${chat.id}">✕</button></div>`;
-      });
-      html += `</div>`;
+      messages.scrollTop = messages.scrollHeight;
     }
-    folderList.innerHTML = html;
-    folderList.querySelectorAll('.chat-item').forEach(el => {
-      el.addEventListener('click', (e) => {
-        if (e.target.classList.contains('chat-delete')) return;
-        const id = el.dataset.chatid;
-        switchChat(id);
-        renderMessages();
-        updateChatTitle();
-        renderSidebar();
-        if (window.innerWidth <= 768) closeSidebarPanel();
+
+    function updateTitle() {
+      const chat = getCurrentChat();
+      currentChatTitle.textContent = chat ? chat.title : 'Новый чат';
+    }
+
+    function renderSidebar() {
+      const search = searchInput.value.toLowerCase();
+      const map = {};
+      state.folders.forEach(f => map[f.id] = { ...f, chats: [] });
+      const noFolder = [];
+      state.chats.forEach(c => {
+        if (search && !c.title.toLowerCase().includes(search)) return;
+        if (c.folderId && map[c.folderId]) map[c.folderId].chats.push(c);
+        else noFolder.push(c);
       });
-      const del = el.querySelector('.chat-delete');
-      if (del) {
-        del.addEventListener('click', (e) => {
+
+      let html = '';
+      state.folders.forEach(f => {
+        const folder = map[f.id];
+        if (!folder || !folder.chats.length) return;
+        html += `<div class="folder-item">`;
+        html += `<div class="folder-header"><span class="folder-name">${escapeHtml(f.name)}</span><div class="folder-actions"><button onclick="window._renameFolder('${f.id}')">✎</button><button onclick="window._deleteFolder('${f.id}')">✕</button></div></div>`;
+        folder.chats.forEach(c => {
+          html += `<div class="chat-item ${c.id === state.currentChatId ? 'active' : ''}" data-id="${c.id}"><span>${escapeHtml(c.title)}</span><button class="chat-delete" data-id="${c.id}">✕</button></div>`;
+        });
+        html += `</div>`;
+      });
+      if (noFolder.length) {
+        html += `<div class="folder-item"><div class="folder-header"><span class="folder-name">📁 Без папки</span></div>`;
+        noFolder.forEach(c => {
+          html += `<div class="chat-item ${c.id === state.currentChatId ? 'active' : ''}" data-id="${c.id}"><span>${escapeHtml(c.title)}</span><button class="chat-delete" data-id="${c.id}">✕</button></div>`;
+        });
+        html += `</div>`;
+      }
+      folderList.innerHTML = html;
+      folderList.querySelectorAll('.chat-item').forEach(el => {
+        el.addEventListener('click', e => {
+          if (e.target.classList.contains('chat-delete')) return;
+          switchChat(el.dataset.id);
+          renderMessages();
+          updateTitle();
+          renderSidebar();
+          if (window.innerWidth <= 768) closeSidebarPanel();
+        });
+        const del = el.querySelector('.chat-delete');
+        if (del) del.addEventListener('click', e => {
           e.stopPropagation();
-          const id = del.dataset.chatid;
           if (confirm('Удалить чат?')) {
-            deleteChatById(id);
+            deleteChatById(del.dataset.id);
             renderSidebar();
             renderMessages();
-            updateChatTitle();
+            updateTitle();
           }
         });
-      }
-    });
-  }
+      });
+    }
 
-  window._renameFolder = function(id) {
-    const folder = state.folders.find(f => f.id === id);
-    if (!folder) return;
-    const newName = prompt('Новое имя папки:', folder.name);
-    if (newName && newName.trim()) {
-      folder.name = newName.trim();
+    window._renameFolder = function(id) {
+      const f = state.folders.find(x => x.id === id);
+      if (!f) return;
+      const n = prompt('Новое имя:', f.name);
+      if (n && n.trim()) { f.name = n.trim(); saveState(); renderSidebar(); }
+    };
+
+    window._deleteFolder = function(id) {
+      if (!confirm('Удалить папку?')) return;
+      state.folders = state.folders.filter(x => x.id !== id);
+      state.chats.forEach(c => { if (c.folderId === id) c.folderId = null; });
       saveState();
       renderSidebar();
-    }
-  };
+    };
 
-  window._deleteFolder = function(id) {
-    if (!confirm('Удалить папку? Чаты останутся без папки.')) return;
-    state.folders = state.folders.filter(f => f.id !== id);
-    state.chats.forEach(c => { if (c.folderId === id) c.folderId = null; });
-    saveState();
-    renderSidebar();
-  };
-
-  async function sendMessage() {
-    const text = promptInput.value.trim();
-    if (!text) return;
-
-    const chat = getCurrentChat();
-    if (!chat) {
-      const newChat = createChat('Новый чат');
-      state.currentChatId = newChat.id;
-      saveState();
-    }
-
-    addMessage('user', text);
-    promptInput.value = '';
-    autoResizeTextarea();
-    renderMessages();
-
-    // Получаем выбранные модели
-    const modelKeys = [];
-    document.querySelectorAll('.model-selector input[type="checkbox"]:checked').forEach(el => {
-      modelKeys.push(el.id.replace('model_', ''));
-    });
-
-    if (modelKeys.length === 0) {
-      addMessage('assistant', '⚠️ Выбери хотя бы одну модель.');
+    async function sendMessage() {
+      const text = promptInput.value.trim();
+      if (!text) return;
+      let chat = getCurrentChat();
+      if (!chat) {
+        chat = createChat('Новый чат');
+        state.currentChatId = chat.id;
+        saveState();
+      }
+      addMessage('user', text);
+      promptInput.value = '';
+      autoResize();
       renderMessages();
-      return;
-    }
 
-    // Проверка ключей
-    for (const key of modelKeys) {
-      const config = MODELS[key];
-      if (!config) continue;
-      if (config.requiresKey) {
-        const k = getKey(config.provider);
-        if (!k) {
-          addMessage('assistant', `⚠️ Нет API ключа для ${config.name}. Добавь в настройках.`);
+      const models = [];
+      $$('.model-selector input:checked').forEach(el => models.push(el.id.replace('model_', '')));
+      if (!models.length) {
+        addMessage('assistant', '⚠️ Выбери хотя бы одну модель.');
+        renderMessages();
+        return;
+      }
+      for (const key of models) {
+        const cfg = MODELS[key];
+        if (cfg && cfg.requiresKey && !getKey(cfg.provider)) {
+          addMessage('assistant', `⚠️ Нет ключа для ${cfg.name}. Добавь в настройках.`);
           renderMessages();
           return;
         }
       }
-    }
 
-    // Показываем "Думаю..." для каждой модели
-    const chatObj = getCurrentChat();
-    modelKeys.forEach(key => {
-      const config = MODELS[key];
-      if (config) {
-        chatObj.messages.push({ role: 'assistant', content: `⏳ ${config.name} думает...`, timestamp: Date.now() });
-      }
-    });
-    saveState();
-    renderMessages();
-
-    try {
-      const results = await sendToMultipleModels(text, modelKeys);
-      const msgs = chatObj.messages;
-      let idx = msgs.length - modelKeys.length;
-      results.forEach(result => {
-        if (idx < msgs.length) {
-          if (result.error) {
-            msgs[idx].content = `❌ ${result.model}: ${result.error}`;
-          } else {
-            msgs[idx].content = `🤖 **${result.model}**\n\n${result.response}`;
-          }
-          idx++;
-        }
+      const chatObj = getCurrentChat();
+      models.forEach(key => {
+        const cfg = MODELS[key];
+        if (cfg) chatObj.messages.push({ role: 'assistant', content: `⏳ ${cfg.name} думает...`, timestamp: Date.now() });
       });
       saveState();
       renderMessages();
-    } catch (err) {
-      addMessage('assistant', `❌ Ошибка: ${err.message}`);
-      renderMessages();
-    }
-  }
 
-  function setupEventListeners() {
-    sendBtn.addEventListener('click', sendMessage);
-    promptInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-    });
-    openSidebar.addEventListener('click', openSidebarPanel);
-    closeSidebar.addEventListener('click', closeSidebarPanel);
-    newChatBtn.addEventListener('click', () => {
-      const chat = createChat('Новый чат');
-      chat.folderId = state.currentFolderId || null;
-      saveState();
-      renderSidebar();
-      renderMessages();
-      updateChatTitle();
-    });
-    deleteChatBtn.addEventListener('click', () => {
-      if (!state.currentChatId) return;
-      if (confirm('Удалить этот чат?')) {
-        deleteChatById(state.currentChatId);
+      try {
+        const results = await sendToMultipleModels(text, models);
+        const msgs = chatObj.messages;
+        let idx = msgs.length - models.length;
+        results.forEach(r => {
+          if (idx < msgs.length) {
+            msgs[idx].content = r.error ? `❌ ${r.model}: ${r.error}` : `🤖 **${r.model}**\n\n${r.response}`;
+            idx++;
+          }
+        });
+        saveState();
+        renderMessages();
+      } catch (e) {
+        addMessage('assistant', `❌ Ошибка: ${e.message}`);
+        renderMessages();
+      }
+    }
+
+    function setupEvents() {
+      sendBtn.addEventListener('click', sendMessage);
+      promptInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+      openSidebar.addEventListener('click', openSidebarPanel);
+      closeSidebar.addEventListener('click', closeSidebarPanel);
+      newChatBtn.addEventListener('click', () => {
+        const c = createChat('Новый чат');
+        c.folderId = state.currentFolderId || null;
+        saveState();
         renderSidebar();
         renderMessages();
-        updateChatTitle();
-      }
-    });
-    searchInput.addEventListener('input', renderSidebar);
-    settingsBtn.addEventListener('click', () => { loadKeys(); settingsModal.classList.remove('hidden'); });
-    closeSettings.addEventListener('click', () => { settingsModal.classList.add('hidden'); });
-    saveKeysBtn.addEventListener('click', () => { saveKeys(); settingsModal.classList.add('hidden'); });
-    settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) settingsModal.classList.add('hidden'); });
-    promptInput.addEventListener('input', autoResizeTextarea);
-    exportBtn.addEventListener('click', exportData);
-    document.addEventListener('click', (e) => {
-      if (window.innerWidth <= 768) {
-        if (sidebar.classList.contains('open')) {
-          if (!sidebar.contains(e.target) && e.target !== openSidebar) {
-            closeSidebarPanel();
-          }
+        updateTitle();
+      });
+      deleteChatBtn.addEventListener('click', () => {
+        if (!state.currentChatId) return;
+        if (confirm('Удалить чат?')) {
+          deleteChatById(state.currentChatId);
+          renderSidebar();
+          renderMessages();
+          updateTitle();
         }
-      }
-    });
-  }
+      });
+      searchInput.addEventListener('input', renderSidebar);
+      settingsBtn.addEventListener('click', () => { loadKeys(); settingsModal.classList.remove('hidden'); });
+      closeSettings.addEventListener('click', () => settingsModal.classList.add('hidden'));
+      saveKeysBtn.addEventListener('click', () => { saveKeys(); settingsModal.classList.add('hidden'); });
+      settingsModal.addEventListener('click', e => { if (e.target === settingsModal) settingsModal.classList.add('hidden'); });
+      promptInput.addEventListener('input', autoResize);
+      exportBtn.addEventListener('click', exportData);
+      document.addEventListener('click', e => {
+        if (window.innerWidth <= 768 && sidebar.classList.contains('open') && !sidebar.contains(e.target) && e.target !== openSidebar) {
+          closeSidebarPanel();
+        }
+      });
+    }
 
-  function openSidebarPanel() { sidebar.classList.remove('closed'); sidebar.classList.add('open'); }
-  function closeSidebarPanel() { sidebar.classList.add('closed'); sidebar.classList.remove('open'); }
-  function autoResizeTextarea() { promptInput.style.height = 'auto'; promptInput.style.height = Math.min(promptInput.scrollHeight, 120) + 'px'; }
+    function openSidebarPanel() { sidebar.classList.remove('closed'); sidebar.classList.add('open'); }
+    function closeSidebarPanel() { sidebar.classList.add('closed'); sidebar.classList.remove('open'); }
+    function autoResize() { promptInput.style.height = 'auto'; promptInput.style.height = Math.min(promptInput.scrollHeight, 120) + 'px'; }
 
-  document.addEventListener('DOMContentLoaded', init);
-})();
+    document.addEventListener('DOMContentLoaded', init);
+  })();
 </script>
 </body>
 </html>
