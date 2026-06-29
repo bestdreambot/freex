@@ -11,18 +11,20 @@
 
 <div id="app">
 
-  <!-- Боковое меню -->
-  <aside id="sidebar">
+  <!-- Боковое меню (выезжающее слева, как в Notion/Telegram) -->
+  <aside id="sidebar" class="sidebar closed">
     <div class="sidebar-header">
       <span class="logo">FreeX</span>
       <button id="closeSidebar" class="icon-btn">✕</button>
     </div>
     <button id="newChat" class="new-chat-btn">+ Новый чат</button>
-    <input type="text" id="searchChats" placeholder="Поиск..." />
-    <div id="folderList"></div>
+    <div class="search-box">
+      <input type="text" id="searchChats" placeholder="Поиск..." />
+    </div>
+    <div id="folderList" class="folder-list"></div>
     <div class="sidebar-footer">
       <button id="settingsBtn">⚙️ Настройки</button>
-      <button id="exportBtn">📥 Экспорт</button>
+      <button id="exportBtn" style="margin-top:6px;">📥 Экспорт</button>
     </div>
   </aside>
 
@@ -34,11 +36,12 @@
       <button id="deleteChat" class="icon-btn" style="color:#ff6b6b;">🗑</button>
     </header>
 
-    <div id="messages">
+    <div id="messages" class="messages">
       <div class="empty-state">
         <span>🐡</span>
         <h2>FreeX</h2>
         <p>Твой мобильный ИИ-стенд</p>
+        <p style="font-size:0.85rem; color:#666;">Напиши что-нибудь, чтобы начать</p>
       </div>
     </div>
 
@@ -85,8 +88,10 @@
 <script src="core.js"></script>
 <script>
   (function() {
-    const $ = s => document.querySelector(s);
-    const $$ = s => document.querySelectorAll(s);
+    'use strict';
+
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => document.querySelectorAll(s);
 
     const sidebar = $('#sidebar');
     const folderList = $('#folderList');
@@ -111,8 +116,10 @@
       renderSidebar();
       renderMessages();
       setupEvents();
-      if (!state.chats.length) createChat('Новый чат');
-      if (!state.currentChatId && state.chats.length) state.currentChatId = state.chats[0].id;
+      if (state.chats.length === 0) createChat('Новый чат');
+      if (state.currentChatId === null && state.chats.length > 0) {
+        state.currentChatId = state.chats[0].id;
+      }
       renderMessages();
       updateTitle();
       autoResize();
@@ -121,14 +128,24 @@
     function renderMessages() {
       const chat = getCurrentChat();
       messages.innerHTML = '';
-      if (!chat || !chat.messages.length) {
-        messages.innerHTML = `<div class="empty-state"><span>🐡</span><h2>FreeX</h2><p>Твой мобильный ИИ-стенд</p></div>`;
+      if (!chat || chat.messages.length === 0) {
+        messages.innerHTML = `
+          <div class="empty-state">
+            <span>🐡</span>
+            <h2>FreeX</h2>
+            <p>Твой мобильный ИИ-стенд</p>
+            <p style="font-size:0.85rem; color:#666;">Напиши что-нибудь, чтобы начать</p>
+          </div>
+        `;
         return;
       }
-      chat.messages.forEach(m => {
+      chat.messages.forEach((msg) => {
         const div = document.createElement('div');
-        div.className = 'message ' + m.role;
-        div.innerHTML = `<div class="msg-label">${m.role === 'user' ? '👤 Вы' : '🤖 ИИ'}</div><div class="msg-content">${escapeHtml(m.content)}</div>`;
+        div.className = 'message ' + msg.role;
+        div.innerHTML = `
+          <div class="msg-label">${msg.role === 'user' ? '👤 Вы' : '🤖 ИИ'}</div>
+          <div class="msg-content">${escapeHtml(msg.content)}</div>
+        `;
         messages.appendChild(div);
       });
       messages.scrollTop = messages.scrollHeight;
@@ -140,67 +157,82 @@
     }
 
     function renderSidebar() {
-      const search = searchInput.value.toLowerCase();
-      const map = {};
-      state.folders.forEach(f => map[f.id] = { ...f, chats: [] });
-      const noFolder = [];
-      state.chats.forEach(c => {
-        if (search && !c.title.toLowerCase().includes(search)) return;
-        if (c.folderId && map[c.folderId]) map[c.folderId].chats.push(c);
-        else noFolder.push(c);
+      const searchTerm = searchInput.value.toLowerCase();
+      const folderMap = {};
+      state.folders.forEach(f => { folderMap[f.id] = { ...f, chats: [] }; });
+      const noFolderChats = [];
+      state.chats.forEach(chat => {
+        const title = chat.title.toLowerCase();
+        if (searchTerm && !title.includes(searchTerm)) return;
+        if (chat.folderId && folderMap[chat.folderId]) {
+          folderMap[chat.folderId].chats.push(chat);
+        } else {
+          noFolderChats.push(chat);
+        }
       });
 
       let html = '';
       state.folders.forEach(f => {
-        const folder = map[f.id];
-        if (!folder || !folder.chats.length) return;
+        const folder = folderMap[f.id];
+        if (!folder || folder.chats.length === 0) return;
         html += `<div class="folder-item">`;
         html += `<div class="folder-header"><span class="folder-name">${escapeHtml(f.name)}</span><div class="folder-actions"><button onclick="window._renameFolder('${f.id}')">✎</button><button onclick="window._deleteFolder('${f.id}')">✕</button></div></div>`;
-        folder.chats.forEach(c => {
-          html += `<div class="chat-item ${c.id === state.currentChatId ? 'active' : ''}" data-id="${c.id}"><span>${escapeHtml(c.title)}</span><button class="chat-delete" data-id="${c.id}">✕</button></div>`;
+        folder.chats.forEach(chat => {
+          const active = chat.id === state.currentChatId ? 'active' : '';
+          html += `<div class="chat-item ${active}" data-chatid="${chat.id}"><span>${escapeHtml(chat.title)}</span><button class="chat-delete" data-chatid="${chat.id}">✕</button></div>`;
         });
         html += `</div>`;
       });
-      if (noFolder.length) {
+      if (noFolderChats.length > 0) {
         html += `<div class="folder-item"><div class="folder-header"><span class="folder-name">📁 Без папки</span></div>`;
-        noFolder.forEach(c => {
-          html += `<div class="chat-item ${c.id === state.currentChatId ? 'active' : ''}" data-id="${c.id}"><span>${escapeHtml(c.title)}</span><button class="chat-delete" data-id="${c.id}">✕</button></div>`;
+        noFolderChats.forEach(chat => {
+          const active = chat.id === state.currentChatId ? 'active' : '';
+          html += `<div class="chat-item ${active}" data-chatid="${chat.id}"><span>${escapeHtml(chat.title)}</span><button class="chat-delete" data-chatid="${chat.id}">✕</button></div>`;
         });
         html += `</div>`;
       }
       folderList.innerHTML = html;
+
       folderList.querySelectorAll('.chat-item').forEach(el => {
-        el.addEventListener('click', e => {
+        el.addEventListener('click', (e) => {
           if (e.target.classList.contains('chat-delete')) return;
-          switchChat(el.dataset.id);
+          const id = el.dataset.chatid;
+          switchChat(id);
           renderMessages();
           updateTitle();
           renderSidebar();
           if (window.innerWidth <= 768) closeSidebarPanel();
         });
         const del = el.querySelector('.chat-delete');
-        if (del) del.addEventListener('click', e => {
-          e.stopPropagation();
-          if (confirm('Удалить чат?')) {
-            deleteChatById(del.dataset.id);
-            renderSidebar();
-            renderMessages();
-            updateTitle();
-          }
-        });
+        if (del) {
+          del.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = del.dataset.chatid;
+            if (confirm('Удалить чат?')) {
+              deleteChatById(id);
+              renderSidebar();
+              renderMessages();
+              updateTitle();
+            }
+          });
+        }
       });
     }
 
     window._renameFolder = function(id) {
-      const f = state.folders.find(x => x.id === id);
-      if (!f) return;
-      const n = prompt('Новое имя:', f.name);
-      if (n && n.trim()) { f.name = n.trim(); saveState(); renderSidebar(); }
+      const folder = state.folders.find(f => f.id === id);
+      if (!folder) return;
+      const newName = prompt('Новое имя папки:', folder.name);
+      if (newName && newName.trim()) {
+        folder.name = newName.trim();
+        saveState();
+        renderSidebar();
+      }
     };
 
     window._deleteFolder = function(id) {
-      if (!confirm('Удалить папку?')) return;
-      state.folders = state.folders.filter(x => x.id !== id);
+      if (!confirm('Удалить папку? Чаты останутся без папки.')) return;
+      state.folders = state.folders.filter(f => f.id !== id);
       state.chats.forEach(c => { if (c.folderId === id) c.folderId = null; });
       saveState();
       renderSidebar();
@@ -209,67 +241,84 @@
     async function sendMessage() {
       const text = promptInput.value.trim();
       if (!text) return;
+
       let chat = getCurrentChat();
       if (!chat) {
         chat = createChat('Новый чат');
         state.currentChatId = chat.id;
         saveState();
       }
+
       addMessage('user', text);
       promptInput.value = '';
       autoResize();
       renderMessages();
 
-      const models = [];
-      $$('.model-selector input:checked').forEach(el => models.push(el.id.replace('model_', '')));
-      if (!models.length) {
+      const modelKeys = [];
+      $$('.model-selector input[type="checkbox"]:checked').forEach(el => {
+        modelKeys.push(el.id.replace('model_', ''));
+      });
+
+      if (modelKeys.length === 0) {
         addMessage('assistant', '⚠️ Выбери хотя бы одну модель.');
         renderMessages();
         return;
       }
-      for (const key of models) {
-        const cfg = MODELS[key];
-        if (cfg && cfg.requiresKey && !getKey(cfg.provider)) {
-          addMessage('assistant', `⚠️ Нет ключа для ${cfg.name}. Добавь в настройках.`);
-          renderMessages();
-          return;
+
+      for (const key of modelKeys) {
+        const config = MODELS[key];
+        if (config && config.requiresKey) {
+          const k = getKey(config.provider);
+          if (!k) {
+            addMessage('assistant', `⚠️ Нет API ключа для ${config.name}. Добавь в настройках.`);
+            renderMessages();
+            return;
+          }
         }
       }
 
       const chatObj = getCurrentChat();
-      models.forEach(key => {
-        const cfg = MODELS[key];
-        if (cfg) chatObj.messages.push({ role: 'assistant', content: `⏳ ${cfg.name} думает...`, timestamp: Date.now() });
+      modelKeys.forEach(key => {
+        const config = MODELS[key];
+        if (config) {
+          chatObj.messages.push({ role: 'assistant', content: `⏳ ${config.name} думает...`, timestamp: Date.now() });
+        }
       });
       saveState();
       renderMessages();
 
       try {
-        const results = await sendToMultipleModels(text, models);
+        const results = await sendToMultipleModels(text, modelKeys);
         const msgs = chatObj.messages;
-        let idx = msgs.length - models.length;
-        results.forEach(r => {
+        let idx = msgs.length - modelKeys.length;
+        results.forEach(result => {
           if (idx < msgs.length) {
-            msgs[idx].content = r.error ? `❌ ${r.model}: ${r.error}` : `🤖 **${r.model}**\n\n${r.response}`;
+            if (result.error) {
+              msgs[idx].content = `❌ ${result.model}: ${result.error}`;
+            } else {
+              msgs[idx].content = `🤖 **${result.model}**\n\n${result.response}`;
+            }
             idx++;
           }
         });
         saveState();
         renderMessages();
-      } catch (e) {
-        addMessage('assistant', `❌ Ошибка: ${e.message}`);
+      } catch (err) {
+        addMessage('assistant', `❌ Ошибка: ${err.message}`);
         renderMessages();
       }
     }
 
     function setupEvents() {
       sendBtn.addEventListener('click', sendMessage);
-      promptInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+      promptInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+      });
       openSidebar.addEventListener('click', openSidebarPanel);
       closeSidebar.addEventListener('click', closeSidebarPanel);
       newChatBtn.addEventListener('click', () => {
-        const c = createChat('Новый чат');
-        c.folderId = state.currentFolderId || null;
+        const chat = createChat('Новый чат');
+        chat.folderId = state.currentFolderId || null;
         saveState();
         renderSidebar();
         renderMessages();
@@ -277,7 +326,7 @@
       });
       deleteChatBtn.addEventListener('click', () => {
         if (!state.currentChatId) return;
-        if (confirm('Удалить чат?')) {
+        if (confirm('Удалить этот чат?')) {
           deleteChatById(state.currentChatId);
           renderSidebar();
           renderMessages();
@@ -288,12 +337,16 @@
       settingsBtn.addEventListener('click', () => { loadKeys(); settingsModal.classList.remove('hidden'); });
       closeSettings.addEventListener('click', () => settingsModal.classList.add('hidden'));
       saveKeysBtn.addEventListener('click', () => { saveKeys(); settingsModal.classList.add('hidden'); });
-      settingsModal.addEventListener('click', e => { if (e.target === settingsModal) settingsModal.classList.add('hidden'); });
+      settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) settingsModal.classList.add('hidden'); });
       promptInput.addEventListener('input', autoResize);
       exportBtn.addEventListener('click', exportData);
-      document.addEventListener('click', e => {
-        if (window.innerWidth <= 768 && sidebar.classList.contains('open') && !sidebar.contains(e.target) && e.target !== openSidebar) {
-          closeSidebarPanel();
+      document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768) {
+          if (sidebar.classList.contains('open')) {
+            if (!sidebar.contains(e.target) && e.target !== openSidebar) {
+              closeSidebarPanel();
+            }
+          }
         }
       });
     }
