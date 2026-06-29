@@ -3,100 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OpenFugu • Grok Style</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-    body { 
-      font-family: 'Inter', system-ui, sans-serif; 
-      background: #0a0a0f; 
-      color: #e0e0e0; 
-      margin: 0; 
-      padding: 16px; 
-    }
-    .header { text-align: center; padding: 20px 0; }
-    h1 { margin: 0; font-size: 1.6em; }
-    .card { 
-      background: #111114; 
-      border-radius: 16px; 
-      padding: 20px; 
-      margin-bottom: 20px; 
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    }
-    input, button { 
-      width: 100%; 
-      padding: 16px; 
-      margin: 10px 0; 
-      border-radius: 12px; 
-      font-size: 1.05em; 
-    }
-    input { background: #1f1f24; border: 1px solid #333; color: white; }
-    button { 
-      background: linear-gradient(90deg, #00d4ff, #0099cc); 
-      color: black; 
-      font-weight: 600; 
-      border: none; 
-      cursor: pointer; 
-    }
-    .log { 
-      background: #1a1a1f; 
-      padding: 18px; 
-      border-radius: 12px; 
-      min-height: 160px; 
-      white-space: pre-wrap; 
-      font-size: 1em; 
-      line-height: 1.5;
-    }
-  </style>
+  <title>FreeX • OpenFugu</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="header">
-    <h1>🐡 OpenFugu</h1>
-    <p style="color:#888; margin-top:4px;">DeepSeek • Grok Style</p>
+  <div class="container">
+    <h1>🐡 FreeX — OpenFugu</h1>
+    <p>Мобильный дашборд</p>
+    <div id="chat"></div>
+    <input id="prompt" placeholder="Напиши запрос..." />
+    <button onclick="send()">Отправить</button>
   </div>
-
-  <div class="card">
-    <h2>💬 Быстрый запрос</h2>
-    <input type="text" id="prompt" placeholder="Напиши что угодно..." value="Расскажи интересный факт про ИИ">
-    <button onclick="sendRequest()">Отправить →</button>
-    <div class="log" id="response">Ответ появится здесь...</div>
-  </div>
-
-  <script>
-    const API_KEY = "sk-0e7c0268e24a43aba5d08af05b18f7a0";
-
-    async function sendRequest() {
-      const prompt = document.getElementById('prompt').value.trim();
-      const responseDiv = document.getElementById('response');
-
-      if (!prompt) {
-        responseDiv.innerHTML = "<span style='color:#ff6b6b'>Введите запрос!</span>";
-        return;
-      }
-
-      responseDiv.innerHTML = "<span style='color:#00d4ff'>⏳ Думаю...</span>";
-
-      try {
-        const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${API_KEY}`
-          },
-          body: JSON.stringify({
-            model: "deepseek-chat",
-            messages: [{ role: "user", content: prompt }],
-            temperature: 0.7,
-            max_tokens: 1500
-          })
-        });
-
-        const data = await res.json();
-        const answer = data.choices?.[0]?.message?.content || "Нет ответа от модели.";
-        responseDiv.textContent = answer;
-      } catch (e) {
-        responseDiv.innerHTML = `<span style='color:#ff6b6b'>Ошибка: ${e.message}</span>`;
-      }
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
