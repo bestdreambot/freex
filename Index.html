@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OpenFugu • Мобильный Дашборд</title>
+  <style>
+    :root {
+      --bg: #0a0a0f; --surface: #12121a; --accent: #00f3ff;
+      --text: #e0e0e0; --muted: #888;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg); color: var(--text);
+      margin: 0; padding: 16px; line-height: 1.6;
+    }
+    header {
+      text-align: center; padding: 25px 0; border-bottom: 1px solid #222;
+    }
+    h1 { color: var(--accent); margin: 0; font-size: 1.8em; }
+    .subtitle { color: var(--muted); }
+
+    .card {
+      background: var(--surface); border-radius: 12px;
+      padding: 18px; margin: 16px 0; border: 1px solid #222;
+    }
+    button {
+      background: var(--accent); color: #000; border: none;
+      padding: 12px 20px; border-radius: 8px; font-weight: bold;
+      margin: 6px 4px 6px 0; cursor: pointer;
+    }
+    pre, .code {
+      background: #1a1a1f; padding: 12px; border-radius: 8px;
+      overflow-x: auto; font-size: 0.9em;
+    }
+    input, textarea, select {
+      width: 100%; padding: 12px; margin: 8px 0;
+      background: #1a1a1f; border: 1px solid #333; border-radius: 8px;
+      color: white;
+    }
+    .log { max-height: 180px; overflow-y: auto; font-size: 0.85em; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🐡 OpenFugu</h1>
+    <p class="subtitle">Мобильный дашборд • Личный оркестратор ИИ</p>
+  </header>
+
+  <div class="card">
+    <h2>🚀 Быстрый запуск</h2>
+    <pre><code>cd OpenFugu
+python openfugu/serve.py --slot-models "qwen,deepseek,llama" --port 8088</code></pre>
+    <button onclick="navigator.clipboard.writeText('cd OpenFugu && python openfugu/serve.py --slot-models \"qwen,deepseek,llama\" --port 8088')">Копировать команду</button>
+  </div>
+
+  <div class="card">
+    <h2>💬 Быстрый запрос</h2>
+    <input type="text" id="prompt" placeholder="Напиши запрос...">
+    <select id="model">
+      <option value="fugu">Fugu (routing)</option>
+      <option value="fugu-ultra">Fugu-Ultra (агент)</option>
+    </select>
+    <button onclick="alert('В реальной версии здесь будет запрос к API. Пока работает как демо.')">Отправить</button>
+    <div class="log" id="response">Ответ появится здесь...</div>
+  </div>
+
+  <div class="card">
+    <h2>📚 Полезные ссылки</h2>
+    <p><a href="start.md" style="color:#00f3ff">→ start.md (цели проекта)</a></p>
+    <p><a href="guide.md" style="color:#00f3ff">→ Полный гид</a></p>
+    <p><a href="https://github.com/trotsky1997/OpenFugu" target="_blank" style="color:#00f3ff">→ Оригинальный OpenFugu</a></p>
+  </div>
+
+  <footer style="text-align:center; margin-top:30px; color:#555; font-size:0.8em;">
+    FreeX • 29.06.2026
+  </footer>
+</body>
+</html>
