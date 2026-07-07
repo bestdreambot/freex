@@ -22,6 +22,7 @@
     --danger:#ff5c5c;
     --radius:14px;
     --radius-msg:18px;
+    --wallpaper: radial-gradient(ellipse at top, #1a1a2e 0%, #0d0d0f 100%);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;margin:0;}
@@ -29,6 +30,13 @@
     background:var(--bg);color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     display:flex;overflow:hidden;
+  }
+
+  #app{
+    flex:1;display:flex;flex-direction:column;height:100%;min-width:0;
+    background:var(--wallpaper);
+    background-size:cover;
+    background-position:center;
   }
 
   /* Sidebar */
@@ -65,13 +73,13 @@
     padding:10px;border-radius:10px;font-size:13px;cursor:pointer;
   }
   .sb-footer button:hover{border-color:var(--accent);}
-  .sb-footer .exp-btn{flex:0 0 auto;padding:10px 14px;}
 
   /* Main */
   #main{flex:1;display:flex;flex-direction:column;height:100%;min-width:0;}
   #topbar{
     display:flex;align-items:center;gap:10px;padding:12px 14px;
-    border-bottom:1px solid var(--line);background:var(--bg);
+    border-bottom:1px solid var(--line);background:rgba(var(--bg-rgb, 13,13,15), 0.7);
+    backdrop-filter:blur(12px);
     flex-shrink:0;
   }
   #hamb{
@@ -149,7 +157,9 @@
   /* Composer */
   #composer{
     display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));
-    border-top:1px solid var(--line);background:var(--bg);flex-shrink:0;
+    border-top:1px solid var(--line);background:rgba(var(--bg-rgb, 13,13,15), 0.7);
+    backdrop-filter:blur(12px);
+    flex-shrink:0;
   }
   #composer .attach-btn{
     width:44px;height:44px;border-radius:50%;border:1px solid var(--line);
@@ -187,24 +197,53 @@
   #ghStatus{font-size:13px;color:var(--text-dim);white-space:pre-wrap;}
   .backBtn{align-self:flex-start;background:none;border:none;color:var(--accent);font-size:13.5px;cursor:pointer;padding:4px 0 8px;margin:14px 0 0 14px;}
 
-  /* Settings modal */
-  #settingsModal{
-    position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;justify-content:center;z-index:60;
+  /* ===== SETTINGS MODAL ===== */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);
+    display:none;align-items:center;justify-content:center;z-index:60;
   }
-  #settingsModal.open{display:flex;}
-  #settingsSheet{
-    background:var(--bg-2);width:100%;max-width:480px;border-radius:20px 20px 0 0;
-    padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto;
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--bg-2);border:1px solid var(--line);border-radius:20px;
+    padding:20px;max-width:440px;width:92%;max-height:85vh;overflow-y:auto;
   }
-  #settingsSheet h3{margin:6px 0 14px;font-size:17px;}
-  .keyRow{margin-bottom:14px;}
-  .keyRow label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:5px;}
-  .keyRow input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg-3);color:var(--text);font-size:13.5px;}
+  .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .modal-header h2{margin:0;font-size:18px;}
+  .close-btn{background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;}
+  .close-btn:hover{color:var(--text);}
+
+  .tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:8px;flex-wrap:wrap;}
+  .tab{background:none;border:none;color:var(--text-dim);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;}
+  .tab:hover{color:var(--text);}
+  .tab.active{background:var(--accent-dim);color:var(--accent);}
+
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
+
+  .keyRow{margin-bottom:12px;}
+  .keyRow label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px;}
+  .keyRow input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg-3);color:var(--text);font-size:13.5px;outline:none;}
+  .keyRow input:focus{border-color:var(--accent);}
   .keyRow .link{font-size:11px;color:var(--accent);margin-top:2px;display:inline-block;}
-  .keyRow .status{font-size:11px;margin-left:8px;}
-  .keyRow .status.ok{color:#4caf50;}
-  .keyRow .status.fail{color:var(--danger);}
-  .closeSettings{width:100%;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:14.5px;margin-top:6px;cursor:pointer;}
+
+  .setting-group{margin-bottom:14px;}
+  .setting-group label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;}
+
+  .theme-options,.wallpaper-options{display:flex;flex-wrap:wrap;gap:8px;}
+  .theme-btn,.wall-btn{
+    padding:8px 14px;border-radius:10px;border:1px solid var(--line);
+    background:var(--bg-3);color:var(--text);cursor:pointer;font-size:13px;
+    transition:border-color .15s, background .15s;
+  }
+  .theme-btn:hover,.wall-btn:hover{border-color:var(--accent);}
+  .theme-btn.active,.wall-btn.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
+
+  .btn-primary{width:100%;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:14px;cursor:pointer;margin-top:4px;}
+  .btn-primary:hover{opacity:.85;}
+  .btn-secondary{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg-3);color:var(--text);font-size:13px;cursor:pointer;margin-bottom:6px;}
+  .btn-secondary:hover{border-color:var(--accent);}
+  .btn-danger{width:100%;padding:10px;border-radius:10px;border:1px solid var(--danger);background:transparent;color:var(--danger);font-size:13px;cursor:pointer;}
+  .btn-danger:hover{background:var(--danger);color:#fff;}
 </style>
 </head>
 <body>
@@ -219,11 +258,10 @@
   <div class="sb-section" id="chatList"></div>
   <div class="sb-footer">
     <button onclick="openSettings()">⚙ Настройки</button>
-    <button class="exp-btn" onclick="exportData()">💾 Экспорт</button>
   </div>
 </div>
 
-<div id="main">
+<div id="app">
   <div id="topbar">
     <button id="hamb" onclick="toggleSidebar()">☰</button>
     <div id="chatTitle">FreeX</div>
@@ -262,35 +300,77 @@
   </div>
 </div>
 
-<div id="settingsModal">
-  <div id="settingsSheet">
-    <h3>⚙️ Ключи моделей (хранятся только в твоём браузере)</h3>
-
-    <div class="keyRow">
-      <label>OpenRouter API ключ (для Grok, Kimi, Qwen, Gemini, Llama, DeepSeek R1)</label>
-      <input id="key_openrouter" placeholder="sk-or-...">
-      <a class="link" href="https://openrouter.ai/keys" target="_blank">📌 Получить ключ → openrouter.ai/keys</a>
+<!-- ===== SETTINGS MODAL ===== -->
+<div id="settingsModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>⚙️ Настройки</h2>
+      <button class="close-btn" onclick="closeSettings()">✕</button>
     </div>
 
-    <div class="keyRow">
-      <label>GitHub Token (для GitHub Models: GPT-4o, DeepSeek-R1, Llama 3)</label>
-      <input id="key_github" placeholder="ghp_...">
-      <a class="link" href="https://github.com/settings/tokens" target="_blank">📌 Получить токен → GitHub Settings → Tokens</a>
+    <div class="tabs">
+      <button class="tab active" data-tab="tabKeys" onclick="switchTab('tabKeys')">🔑 Ключи</button>
+      <button class="tab" data-tab="tabAppearance" onclick="switchTab('tabAppearance')">🎨 Внешний вид</button>
+      <button class="tab" data-tab="tabData" onclick="switchTab('tabData')">💾 Данные</button>
     </div>
 
-    <div style="font-size:12px;color:var(--text-dim);margin-top:8px;padding:10px;background:var(--bg-3);border-radius:10px;">
-      <b>Бесплатные модели через OpenRouter:</b> Grok, Kimi, Qwen, Gemini 2.0 Flash, Llama 3.3 70B, DeepSeek R1 и другие.<br>
-      <b>Через GitHub Token:</b> GPT-4o, DeepSeek-R1, Llama 3, Phi-4.<br>
-      <span style="color:var(--danger);">⚠️ Изображения пока не передаются в модели — кнопка 📎 в разработке.</span>
+    <!-- TAB 1: КЛЮЧИ -->
+    <div class="tab-content active" id="tabKeys">
+      <div class="keyRow">
+        <label>DeepSeek (прямой API)</label>
+        <input id="key_deepseek" placeholder="sk-...">
+        <a class="link" href="https://platform.deepseek.com/api_keys" target="_blank">📌 Получить ключ</a>
+      </div>
+      <div class="keyRow">
+        <label>OpenRouter (Llama, DeepSeek R1, Gemma, Mistral, Phi)</label>
+        <input id="key_openrouter" placeholder="sk-or-...">
+        <a class="link" href="https://openrouter.ai/keys" target="_blank">📌 Получить ключ</a>
+      </div>
+      <div class="keyRow">
+        <label>GitHub Token (GPT-4o, DeepSeek-R1, Llama 3)</label>
+        <input id="key_github" placeholder="ghp_...">
+        <a class="link" href="https://github.com/settings/tokens" target="_blank">📌 Получить токен</a>
+      </div>
+      <button class="btn-primary" onclick="saveSettings()">💾 Сохранить ключи</button>
     </div>
 
-    <button class="closeSettings" onclick="saveSettings()">💾 Сохранить и закрыть</button>
+    <!-- TAB 2: ВНЕШНИЙ ВИД -->
+    <div class="tab-content" id="tabAppearance">
+      <div class="setting-group">
+        <label>Тема</label>
+        <div class="theme-options">
+          <button class="theme-btn" data-theme="dark" onclick="setTheme('dark')">🌙 Тёмная</button>
+          <button class="theme-btn" data-theme="light" onclick="setTheme('light')">☀️ Светлая</button>
+          <button class="theme-btn" data-theme="system" onclick="setTheme('system')">⚙️ Системная</button>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <label>Обои</label>
+        <div class="wallpaper-options">
+          <button class="wall-btn" data-wall="gradient" onclick="setWallpaper('gradient')">🌌 Градиент</button>
+          <button class="wall-btn" data-wall="dark" onclick="setWallpaper('dark')">⬛ Тёмный</button>
+          <button class="wall-btn" data-wall="light" onclick="setWallpaper('light')">⬜ Светлый</button>
+          <button class="wall-btn" data-wall="custom" onclick="document.getElementById('wallpaperInput').click()">🖼️ Своё</button>
+          <input type="file" id="wallpaperInput" accept="image/*" style="display:none" onchange="setCustomWallpaper(event)">
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: ДАННЫЕ -->
+    <div class="tab-content" id="tabData">
+      <div class="setting-group">
+        <button class="btn-secondary" onclick="exportData()">📤 Экспорт чатов (JSON)</button>
+        <button class="btn-secondary" onclick="document.getElementById('importInput').click()">📥 Импорт чатов (JSON)</button>
+        <input type="file" id="importInput" accept=".json" style="display:none" onchange="importData(event)">
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
 /* ---------- STORAGE ---------- */
-const LS = { chats:'freex_chats', keys:'freex_keys', hqUrl:'freex_hq_url', active:'freex_active_chat', draft:'freex_draft', hint:'freex_hint_shown' };
+const LS = { chats:'freex_chats', keys:'freex_keys', hqUrl:'freex_hq_url', active:'freex_active_chat', draft:'freex_draft', hint:'freex_hint_shown', theme:'freex_theme', wallpaper:'freex_wallpaper' };
 function loadJSON(k,f){ try{ return JSON.parse(localStorage.getItem(k)) ?? f; }catch(e){ return f; } }
 function save(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
 
@@ -301,32 +381,104 @@ let pendingImage = null;
 
 /* ===== МОДЕЛИ ===== */
 const MODELS = [
-  { id:'openrouter_grok', label:'Grok (OpenRouter)', provider:'openrouter', model:'x-ai/grok-4-fast:free', keyField:'key_openrouter' },
-  { id:'openrouter_kimi', label:'Kimi (OpenRouter)', provider:'openrouter', model:'moonshotai/kimi-k2.7:free', keyField:'key_openrouter' },
-  { id:'openrouter_qwen', label:'Qwen (OpenRouter)', provider:'openrouter', model:'qwen/qwen-2.5-72b-instruct:free', keyField:'key_openrouter' },
-  { id:'openrouter_gemini', label:'Gemini 2.0 Flash (OpenRouter)', provider:'openrouter', model:'google/gemini-2.0-flash-exp:free', keyField:'key_openrouter' },
+  { id:'deepseek', label:'DeepSeek (прямой)', provider:'deepseek', keyField:'key_deepseek' },
   { id:'openrouter_llama', label:'Llama 3.3 70B (OpenRouter)', provider:'openrouter', model:'meta-llama/llama-3.3-70b-instruct:free', keyField:'key_openrouter' },
-  { id:'openrouter_deepseek', label:'DeepSeek R1 (OpenRouter)', provider:'openrouter', model:'deepseek/deepseek-r1-0528:free', keyField:'key_openrouter' },
-  { id:'github_gpt4o', label:'GPT-4o (GitHub Models)', provider:'github', model:'github/gpt-4o', keyField:'key_github' },
-  { id:'github_deepseek', label:'DeepSeek-R1 (GitHub Models)', provider:'github', model:'github/deepseek-r1', keyField:'key_github' },
-  { id:'github_llama', label:'Llama 3 (GitHub Models)', provider:'github', model:'github/llama-3', keyField:'key_github' }
+  { id:'openrouter_deepseek_r1', label:'DeepSeek R1 (OpenRouter)', provider:'openrouter', model:'deepseek/deepseek-r1-0528:free', keyField:'key_openrouter' },
+  { id:'openrouter_gemma', label:'Gemma 2 9B (OpenRouter)', provider:'openrouter', model:'google/gemma-2-9b-it:free', keyField:'key_openrouter' },
+  { id:'openrouter_mistral', label:'Mistral 7B (OpenRouter)', provider:'openrouter', model:'mistralai/mistral-7b-instruct:free', keyField:'key_openrouter' },
+  { id:'openrouter_phi', label:'Phi-3.5 (OpenRouter)', provider:'openrouter', model:'microsoft/phi-3.5-mini-128k-instruct:free', keyField:'key_openrouter' },
+  { id:'github_gpt4o', label:'GPT-4o (GitHub Models)', provider:'github', model:'gpt-4o', keyField:'key_github' },
+  { id:'github_deepseek_r1', label:'DeepSeek-R1 (GitHub Models)', provider:'github', model:'DeepSeek-R1', keyField:'key_github' },
+  { id:'github_llama3', label:'Llama 3 (GitHub Models)', provider:'github', model:'Llama-3-8B', keyField:'key_github' }
 ];
 
-/* ===== ДУО (с полной историей) ===== */
-const DUO = ['openrouter_grok','openrouter_kimi'];
+const DUO = ['deepseek','openrouter_llama'];
 
-/* ===== ФУНКЦИЯ ЭКСПОРТА ===== */
+/* ---------- EXPORT / IMPORT ---------- */
 function exportData(){
-  const data = {
-    exported: new Date().toISOString(),
-    chats: chats,
-    version: 'FreeX v2.3'
-  };
+  const data = { exported: new Date().toISOString(), chats: chats, version: 'FreeX v2.5' };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `freex_backup_${new Date().toISOString().slice(0,10)}.json`;
   a.click();
+}
+function importData(e){
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      const data = JSON.parse(ev.target.result);
+      if(data.chats && Array.isArray(data.chats)){
+        chats = data.chats;
+        activeId = chats.length > 0 ? chats[0].id : null;
+        save(LS.chats, chats);
+        if(activeId) localStorage.setItem(LS.active, activeId);
+        renderAll();
+        alert('✅ Импорт выполнен!');
+      } else {
+        alert('❌ Неверный формат файла.');
+      }
+    } catch(e){ alert('❌ Ошибка чтения файла.'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+/* ---------- THEME & WALLPAPER ---------- */
+function applyTheme(theme){
+  const root = document.documentElement;
+  if(theme === 'light'){
+    root.style.setProperty('--bg', '#f0f0f2');
+    root.style.setProperty('--bg-2', '#e8e8ea');
+    root.style.setProperty('--bg-3', '#dddde0');
+    root.style.setProperty('--line', '#c8c8cc');
+    root.style.setProperty('--text', '#1a1a1e');
+    root.style.setProperty('--text-dim', '#6a6a74');
+    root.style.setProperty('--bg-rgb', '240,240,242');
+  } else if(theme === 'dark'){
+    root.style.setProperty('--bg', '#0d0d0f');
+    root.style.setProperty('--bg-2', '#17171a');
+    root.style.setProperty('--bg-3', '#212125');
+    root.style.setProperty('--line', '#2c2c32');
+    root.style.setProperty('--text', '#e8e8ed');
+    root.style.setProperty('--text-dim', '#8a8a94');
+    root.style.setProperty('--bg-rgb', '13,13,15');
+  } else {
+    const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(dark ? 'dark' : 'light');
+    return;
+  }
+  localStorage.setItem(LS.theme, theme);
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === theme));
+}
+
+function setTheme(theme){ applyTheme(theme); }
+function applyWallpaper(type, data){
+  const app = document.getElementById('app');
+  if(type === 'gradient') app.style.background = 'radial-gradient(ellipse at top, #1a1a2e 0%, #0d0d0f 100%)';
+  else if(type === 'dark') app.style.background = '#0d0d0f';
+  else if(type === 'light') app.style.background = '#f0f0f2';
+  else if(type === 'custom' && data) app.style.background = `url(${data}) center/cover no-repeat`;
+  localStorage.setItem(LS.wallpaper, JSON.stringify({type, data: data || null}));
+  document.querySelectorAll('.wall-btn').forEach(b => b.classList.toggle('active', b.dataset.wall === type));
+}
+function setWallpaper(type){ applyWallpaper(type); }
+function setCustomWallpaper(e){
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){ applyWallpaper('custom', ev.target.result); };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+function loadThemeAndWallpaper(){
+  const theme = localStorage.getItem(LS.theme) || 'dark';
+  applyTheme(theme);
+  try{
+    const wall = JSON.parse(localStorage.getItem(LS.wallpaper));
+    if(wall) applyWallpaper(wall.type, wall.data);
+    else applyWallpaper('gradient');
+  } catch(e){ applyWallpaper('gradient'); }
 }
 
 /* ---------- CHAT ---------- */
@@ -354,7 +506,7 @@ function renderMessages(){
   document.getElementById('chatTitle').textContent = chat ? chat.title : 'FreeX';
   if(chat){ document.getElementById('modelSelect').value = chat.model; document.getElementById('modelSelect').disabled = !!chat.duo; document.getElementById('duoBtn').classList.toggle('on', !!chat.duo); }
   if(!chat){ box.innerHTML = `<div class="empty">Нет открытого чата.<br><b>+ Новый чат</b> в меню слева.</div>`; return; }
-  if(chat.messages.length === 0){ box.innerHTML = chat.duo ? `<div class="empty">Дуо включён: два агента отвечают по очереди с учётом истории.</div>` : `<div class="empty">Выбери модель и начни диалог.</div>`; return; }
+  if(chat.messages.length === 0){ box.innerHTML = chat.duo ? `<div class="empty">Дуо включён: два агента по очереди с историей.</div>` : `<div class="empty">Выбери модель и начни диалог.</div>`; return; }
 
   box.innerHTML = chat.messages.map((m, idx) => {
     if(m.role==='sep') return `<div class="sepMsg">${escapeHtml(m.text)}</div>`;
@@ -400,11 +552,7 @@ function updateScrollBtn(){
   scrollBtn.classList.toggle('visible', !atBottom && viewEl.scrollHeight > viewEl.clientHeight);
 }
 viewEl.addEventListener('scroll', updateScrollBtn);
-
-function scrollToBottom(){
-  viewEl.scrollTop = viewEl.scrollHeight;
-  scrollBtn.classList.remove('visible');
-}
+function scrollToBottom(){ viewEl.scrollTop = viewEl.scrollHeight; scrollBtn.classList.remove('visible'); }
 
 /* ---------- COMPOSER ---------- */
 function autoGrow(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
@@ -425,7 +573,6 @@ function handleImage(e){
   reader.onload = function(ev){ pendingImage = ev.target.result; };
   reader.readAsDataURL(file);
   e.target.value = '';
-  // предупреждение
   const box = document.getElementById('messages');
   const warn = document.createElement('div');
   warn.className = 'sepMsg';
@@ -434,7 +581,6 @@ function handleImage(e){
   setTimeout(() => { if(warn.parentNode) warn.remove(); }, 4000);
 }
 
-/* ---------- ОТПРАВКА (с полной историей) ---------- */
 async function sendMessage(){
   const input = document.getElementById('input');
   let text = input.value.trim();
@@ -461,18 +607,18 @@ async function sendMessage(){
       save(LS.chats, chats); renderMessages();
     }
 
-    // Проверка ключа
     const keyField = model?.keyField || '';
     const apiKey = keys[keyField] || '';
     if(!apiKey){
-      const link = keyField === 'key_openrouter' ? 'https://openrouter.ai/keys' : 'https://github.com/settings/tokens';
+      const link = keyField === 'key_deepseek' ? 'https://platform.deepseek.com/api_keys' :
+                   keyField === 'key_openrouter' ? 'https://openrouter.ai/keys' :
+                   'https://github.com/settings/tokens';
       const msg = `⚠️ Нет API ключа для ${modelLabel(modelId)}.\n\n📌 Получить ключ: ${link}`;
       chat.messages.push({ role:'ai', model: modelId, text: msg });
       save(LS.chats, chats); renderMessages();
       continue;
     }
 
-    // typing
     const box = document.getElementById('messages');
     const typingEl = document.createElement('div');
     typingEl.className = 'typing-wrapper';
@@ -481,7 +627,6 @@ async function sendMessage(){
     viewEl.scrollTop = viewEl.scrollHeight;
 
     try{
-      // ===== ПЕРЕДАЁМ ПОЛНУЮ ИСТОРИЮ (все сообщения чата) =====
       const history = chat.messages.filter(m => m.role !== 'sep').map(m => ({
         role: m.role === 'user' ? 'user' : 'assistant',
         content: m.text
@@ -503,24 +648,26 @@ function refreshSend(){
 }
 document.getElementById('input').addEventListener('input', refreshSend);
 
-/* ===== ВЫЗОВ МОДЕЛЕЙ ===== */
+/* ===== MODEL CALLS ===== */
 async function callModel(modelId, history, apiKey){
   const model = MODELS.find(m=>m.id===modelId);
 
+  if(model?.provider === 'deepseek'){
+    const r = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body: JSON.stringify({ model:'deepseek-chat', messages: history, temperature:0.7 })
+    });
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error?.message || 'DeepSeek: ошибка');
+    return d.choices[0].message.content;
+  }
+
   if(model?.provider === 'openrouter'){
     const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + apiKey,
-        'HTTP-Referer': 'https://freex-xi.vercel.app',
-        'X-Title': 'FreeX'
-      },
-      body: JSON.stringify({
-        model: model.model,
-        messages: history,
-        temperature: 0.7
-      })
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey,'HTTP-Referer':'https://freex-xi.vercel.app','X-Title':'FreeX'},
+      body: JSON.stringify({ model: model.model, messages: history, temperature:0.7 })
     });
     const d = await r.json();
     if(!r.ok) throw new Error(d.error?.message || 'OpenRouter: ошибка');
@@ -529,17 +676,9 @@ async function callModel(modelId, history, apiKey){
 
   if(model?.provider === 'github'){
     const r = await fetch('https://models.inference.ai.azure.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + apiKey
-      },
-      body: JSON.stringify({
-        model: model.model.replace('github/',''),
-        messages: history,
-        temperature: 0.7,
-        max_tokens: 4000
-      })
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body: JSON.stringify({ model: model.model, messages: history, temperature:0.7, max_tokens:4000 })
     });
     const d = await r.json();
     if(!r.ok) throw new Error(d.error?.message || 'GitHub Models: ошибка');
@@ -551,19 +690,26 @@ async function callModel(modelId, history, apiKey){
 
 /* ---------- SETTINGS ---------- */
 function openSettings(){
-  ['key_openrouter','key_github'].forEach(k => {
+  ['key_deepseek','key_openrouter','key_github'].forEach(k => {
     const el = document.getElementById(k);
     if(el) el.value = keys[k] || '';
   });
   document.getElementById('settingsModal').classList.add('open');
 }
+function closeSettings(){ document.getElementById('settingsModal').classList.remove('open'); }
 function saveSettings(){
-  ['key_openrouter','key_github'].forEach(k => {
+  ['key_deepseek','key_openrouter','key_github'].forEach(k => {
     const el = document.getElementById(k);
     if(el) keys[k] = el.value.trim();
   });
   save(LS.keys, keys);
-  document.getElementById('settingsModal').classList.remove('open');
+  closeSettings();
+}
+function switchTab(id){
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelector(`.tab[data-tab="${id}"]`).classList.add('active');
 }
 
 /* ---------- HQ ---------- */
@@ -632,6 +778,7 @@ function populateModelSelect(){
   sel.onchange = () => { const c = getActiveChat(); if(c){ c.model = sel.value; save(LS.chats, chats); } };
 }
 
+loadThemeAndWallpaper();
 populateModelSelect();
 if(!activeId && chats.length) activeId = chats[0].id;
 renderAll(); loadDraft(); refreshSend();
