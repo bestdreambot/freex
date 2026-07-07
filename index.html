@@ -13,7 +13,6 @@
     --text:#e9e9ee;
     --text-dim:#9a9aa4;
     --accent:#7c5cff;
-   
     --accent-dim:#7c5cff33;
     --danger:#ff5c5c;
     --radius:14px;
@@ -121,6 +120,19 @@
   #hqEmpty input{width:100%;margin-top:12px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg-2);color:var(--text);font-size:13px;}
   #hqEmpty button{margin-top:10px;padding:10px 16px;border-radius:10px;border:none;background:var(--accent);color:#fff;cursor:pointer;}
 
+  #ghView{flex:1;display:none;flex-direction:column;padding:14px;overflow-y:auto;}
+  #ghView.active{display:flex;}
+  #ghBox{display:flex;flex-direction:column;gap:10px;height:100%;}
+  .ghHead{font-size:13px;color:var(--text-dim);line-height:1.4;}
+  #ghContent{
+    flex:1;min-height:220px;resize:vertical;background:var(--bg-2);color:var(--text);
+    border:1px solid var(--line);border-radius:10px;padding:10px;font-family:monospace;font-size:12px;
+  }
+  .ghRow{display:flex;}
+  #ghPushBtn{flex:1;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:14.5px;cursor:pointer;}
+  #ghPushBtn:disabled{opacity:.5;}
+  #ghStatus{font-size:13px;color:var(--text-dim);white-space:pre-wrap;}
+
   /* Settings modal */
   #settingsModal{
     position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;justify-content:center;z-index:60;
@@ -148,6 +160,7 @@
   <div class="sb-head">FreeX</div>
   <div class="sb-newbtn" onclick="newChat()">+ Новый чат</div>
   <div class="sb-item" id="hqTabBtn" onclick="openHQ()">🗂 HQ (Notion)</div>
+  <div class="sb-item" id="ghTabBtn" onclick="openGH()">🚀 Деплой на GitHub</div>
   <div class="sb-label">Чаты</div>
   <div class="sb-section" id="chatList"></div>
   <div class="sb-footer">
@@ -176,6 +189,19 @@
     <iframe id="hqFrame" style="display:none;"></iframe>
   </div>
 
+  <div id="ghView">
+    <div id="ghBox">
+      <div class="ghHead">
+        Вставь сюда новый код index.html (то, что тебе присылает Claude) и нажми «Отправить». Файл в bestdreambot/freex обновится напрямую, без Grok.
+      </div>
+      <textarea id="ghContent" placeholder="<!DOCTYPE html>..."></textarea>
+      <div class="ghRow">
+        <button id="ghPushBtn" onclick="pushToGitHub()">⬆ Отправить в GitHub</button>
+      </div>
+      <div id="ghStatus"></div>
+    </div>
+  </div>
+
   <div id="composer">
     <textarea id="input" rows="1" placeholder="Написать..." onkeydown="onKeyDown(event)" oninput="autoGrow(this)"></textarea>
     <button id="sendBtn" onclick="sendMessage()">➤</button>
@@ -191,26 +217,15 @@
       <input id="key_deepseek" placeholder="sk-...">
     </div>
     <div class="keyRow">
-      <label>Gemini — API key</label>
-      <input id="key_gemini" placeholder="AIza...">
-    </div>
-    <div class="keyRow">
-      <label>Groq — API key + модель</label>
-      <div class="two">
-        <input id="key_groq" placeholder="gsk_...">
-        <input id="model_groq" placeholder="llama-3.3-70b-versatile">
-      </div>
-    </div>
-    <div class="keyRow">
-      <label>Qwen (DashScope) — API key</label>
-      <input id="key_qwen" placeholder="sk-...">
-    </div>
-    <div class="keyRow">
       <label>Grok (xAI) — API key + модель</label>
       <div class="two">
         <input id="key_grok" placeholder="xai-...">
-        <input id="model_grok" placeholder="grok-4">
+        <input id="model_grok" placeholder="grok-4.3">
       </div>
+    </div>
+    <div class="keyRow">
+      <label>GitHub — Personal Access Token (для кнопки «Деплой»)</label>
+      <input id="key_github" placeholder="ghp_...">
     </div>
 
     <button class="closeSettings" onclick="saveSettings()">Сохранить и закрыть</button>
@@ -235,9 +250,6 @@ let activeId = localStorage.getItem(LS.active) || null;
 /* ---------- models config ---------- */
 const MODELS = [
   { id:'deepseek', label:'DeepSeek' },
-  { id:'gemini',   label:'Gemini' },
-  { id:'groq',     label:'Groq' },
-  { id:'qwen',     label:'Qwen' },
   { id:'grok',     label:'Grok (xAI)' }
 ];
 const DUO = ['deepseek','grok']; // Дуо-режим: кто отвечает и в каком порядке
@@ -376,51 +388,12 @@ async function callModel(modelKey, messages){
       return d.choices[0].message.content;
     }
 
-    case 'gemini': {
-      if(!k.gemini) throw new Error('нет ключа Gemini — открой Настройки');
-      const contents = toOpenAIFormat(messages).map(m => ({
-        role: m.role==='assistant' ? 'model':'user',
-        parts:[{ text: m.content }]
-      }));
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${k.gemini}`, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ contents })
-      });
-      const d = await r.json();
-      if(!r.ok) throw new Error(d.error?.message || 'Gemini: ошибка запроса');
-      return d.candidates[0].content.parts[0].text;
-    }
-
-    case 'groq': {
-      if(!k.groq) throw new Error('нет ключа Groq — открой Настройки');
-      const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+k.groq},
-        body: JSON.stringify({ model: k.groqModel || 'llama-3.3-70b-versatile', messages: toOpenAIFormat(messages) })
-      });
-      const d = await r.json();
-      if(!r.ok) throw new Error(d.error?.message || 'Groq: ошибка запроса');
-      return d.choices[0].message.content;
-    }
-
-    case 'qwen': {
-      if(!k.qwen) throw new Error('нет ключа Qwen — открой Настройки');
-      const r = await fetch('https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+k.qwen},
-        body: JSON.stringify({ model:'qwen-plus', messages: toOpenAIFormat(messages) })
-      });
-      const d = await r.json();
-      if(!r.ok) throw new Error(d.error?.message || 'Qwen: ошибка запроса');
-      return d.choices[0].message.content;
-    }
-
     case 'grok': {
       if(!k.grok) throw new Error('нет ключа Grok (xAI) — открой Настройки');
       const r = await fetch('https://api.x.ai/v1/chat/completions', {
         method:'POST',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+k.grok},
-        body: JSON.stringify({ model: k.grokModel || 'grok-4', messages: toOpenAIFormat(messages) })
+        body: JSON.stringify({ model: k.grokModel || 'grok-4.3', messages: toOpenAIFormat(messages) })
       });
       const d = await r.json();
       if(!r.ok) throw new Error(d.error?.message || 'Grok: ошибка запроса');
@@ -434,23 +407,17 @@ async function callModel(modelKey, messages){
 /* ---------- settings ---------- */
 function openSettings(){
   document.getElementById('key_deepseek').value   = keys.deepseek || '';
-  document.getElementById('key_gemini').value      = keys.gemini || '';
-  document.getElementById('key_groq').value        = keys.groq || '';
-  document.getElementById('model_groq').value      = keys.groqModel || '';
-  document.getElementById('key_qwen').value        = keys.qwen || '';
   document.getElementById('key_grok').value        = keys.grok || '';
   document.getElementById('model_grok').value      = keys.grokModel || '';
+  document.getElementById('key_github').value      = keys.github || '';
   document.getElementById('settingsModal').classList.add('open');
 }
 function saveSettings(){
   keys = {
     deepseek: document.getElementById('key_deepseek').value.trim(),
-    gemini: document.getElementById('key_gemini').value.trim(),
-    groq: document.getElementById('key_groq').value.trim(),
-    groqModel: document.getElementById('model_groq').value.trim(),
-    qwen: document.getElementById('key_qwen').value.trim(),
     grok: document.getElementById('key_grok').value.trim(),
-    grokModel: document.getElementById('model_grok').value.trim()
+    grokModel: document.getElementById('model_grok').value.trim(),
+    github: document.getElementById('key_github').value.trim()
   };
   save(LS.keys, keys);
   document.getElementById('settingsModal').classList.remove('open');
@@ -462,6 +429,7 @@ function openHQ(){
   hqOpen = true;
   document.getElementById('view').style.display='none';
   document.getElementById('composer').style.display='none';
+  document.getElementById('ghView').classList.remove('active');
   document.getElementById('hqView').classList.add('active');
   document.getElementById('chatTitle').textContent = 'HQ (Notion)';
   toggleSidebar(false);
@@ -477,12 +445,77 @@ function closeHQ(){
   document.getElementById('view').style.display='flex';
   document.getElementById('composer').style.display='flex';
   document.getElementById('hqView').classList.remove('active');
+  document.getElementById('ghView').classList.remove('active');
 }
 function saveHQUrl(){
   const val = document.getElementById('hqUrlInput').value.trim();
   if(!val) return;
   localStorage.setItem(LS.hqUrl, val);
   openHQ();
+}
+
+/* ---------- GitHub Deploy ---------- */
+const GH_REPO = 'bestdreambot/freex';
+const GH_PATH = 'index.html';
+const GH_BRANCH = 'main';
+
+function openGH(){
+  hqOpen = true; // переиспользуем флаг, чтобы список чатов не подсвечивал активный
+  document.getElementById('view').style.display='none';
+  document.getElementById('composer').style.display='none';
+  document.getElementById('hqView').classList.remove('active');
+  document.getElementById('ghView').classList.add('active');
+  document.getElementById('chatTitle').textContent = 'Деплой на GitHub';
+  toggleSidebar(false);
+  renderSidebarList();
+}
+function closeGH(){
+  hqOpen = false;
+  document.getElementById('view').style.display='flex';
+  document.getElementById('composer').style.display='flex';
+  document.getElementById('ghView').classList.remove('active');
+}
+function utf8ToBase64(str){
+  return btoa(unescape(encodeURIComponent(str)));
+}
+async function pushToGitHub(){
+  const token = keys.github;
+  const status = document.getElementById('ghStatus');
+  const content = document.getElementById('ghContent').value;
+  if(!token){ status.textContent = 'Нет GitHub-токена — открой Настройки.'; return; }
+  if(!content.trim()){ status.textContent = 'Сначала вставь код index.html в поле выше.'; return; }
+
+  document.getElementById('ghPushBtn').disabled = true;
+  status.textContent = 'Отправляю...';
+  try{
+    const apiUrl = `https://api.github.com/repos/${GH_REPO}/contents/${GH_PATH}`;
+    const getRes = await fetch(apiUrl + `?ref=${GH_BRANCH}`, {
+      headers:{ 'Authorization':'Bearer '+token, 'Accept':'application/vnd.github+json' }
+    });
+    let sha = undefined;
+    if(getRes.ok){ const cur = await getRes.json(); sha = cur.sha; }
+    else if(getRes.status !== 404){
+      const e = await getRes.json().catch(()=>({}));
+      throw new Error('Не смог прочитать текущий файл: ' + (e.message || getRes.status));
+    }
+
+    const putRes = await fetch(apiUrl, {
+      method:'PUT',
+      headers:{ 'Authorization':'Bearer '+token, 'Accept':'application/vnd.github+json', 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        message: 'FreeX: обновление index.html через сайт, ' + new Date().toISOString(),
+        content: utf8ToBase64(content),
+        sha, branch: GH_BRANCH
+      })
+    });
+    const putData = await putRes.json();
+    if(!putRes.ok) throw new Error(putData.message || 'GitHub отклонил запрос');
+
+    status.textContent = 'Готово! Коммит: ' + (putData.commit?.sha?.slice(0,7) || '—') + '\nVercel задеплоит за 1-2 минуты.';
+  }catch(err){
+    status.textContent = 'Ошибка: ' + err.message;
+  }
+  document.getElementById('ghPushBtn').disabled = false;
 }
 
 /* ---------- sidebar ---------- */
@@ -501,4 +534,3 @@ renderAll();
 </script>
 </body>
 </html>
-
