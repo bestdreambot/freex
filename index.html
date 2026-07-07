@@ -93,8 +93,19 @@
   #duoBtn.on{background:var(--accent-dim);color:var(--accent);border-color:var(--accent);}
 
   /* ===== Chat ===== */
-  #view{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+  #view{flex:1;overflow-y:auto;display:flex;flex-direction:column;position:relative;}
   #messages{flex:1;padding:16px 12px 8px;display:flex;flex-direction:column;gap:6px;max-width:820px;margin:0 auto;width:100%;}
+
+  /* Scroll to bottom button */
+  #scrollDownBtn{
+    position:absolute;bottom:20px;right:20px;width:44px;height:44px;
+    border-radius:50%;border:none;background:var(--accent);color:#fff;
+    font-size:20px;cursor:pointer;box-shadow:0 4px 16px rgba(124,92,255,0.4);
+    display:none;align-items:center;justify-content:center;z-index:10;
+    transition:transform .15s, opacity .15s;
+  }
+  #scrollDownBtn:active{transform:scale(0.9);}
+  #scrollDownBtn.visible{display:flex;}
 
   /* DeepSeek-style messages */
   .msg-wrapper{display:flex;gap:12px;padding:6px 4px;width:100%;}
@@ -173,6 +184,29 @@
   /* Image preview */
   .img-preview{max-width:200px;max-height:150px;border-radius:10px;border:1px solid var(--line);margin:4px 0;}
 
+  /* ===== ЛОКИНГ (приветственный экран) ===== */
+  #lockScreen{
+    position:fixed;inset:0;background:var(--bg);z-index:100;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:30px;text-align:center;
+  }
+  #lockScreen.hidden{display:none;}
+  #lockScreen .big{font-size:48px;margin-bottom:10px;}
+  #lockScreen h2{font-size:22px;margin-bottom:8px;color:var(--text);}
+  #lockScreen p{color:var(--text-dim);font-size:14px;max-width:340px;margin-bottom:20px;line-height:1.5;}
+  #lockScreen .key-input{
+    width:100%;max-width:360px;padding:12px 16px;border-radius:12px;
+    border:1px solid var(--line);background:var(--bg-2);color:var(--text);
+    font-size:15px;margin-bottom:10px;outline:none;
+  }
+  #lockScreen .key-input:focus{border-color:var(--accent);}
+  #lockScreen .btn{
+    padding:12px 32px;border-radius:12px;border:none;
+    background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer;
+  }
+  #lockScreen .btn:hover{opacity:.85;}
+  #lockScreen .lock-error{color:var(--danger);font-size:13px;margin-top:8px;min-height:20px;}
+
   /* HQ / GH views */
   #hqView{flex:1;display:none;flex-direction:column;}
   #hqView.active{display:flex;}
@@ -210,6 +244,18 @@
 </head>
 <body>
 
+<!-- ===== ЛОКИНГ ===== -->
+<div id="lockScreen">
+  <div class="big">🔮</div>
+  <h2>FreeX</h2>
+  <p>Введи API ключи, чтобы начать работу.<br>Они сохранятся только в твоём браузере.</p>
+  <input class="key-input" id="lockDeepSeek" type="password" placeholder="DeepSeek API ключ (sk-...)" autofocus>
+  <input class="key-input" id="lockGrok" type="password" placeholder="Grok API ключ (xai-...)">
+  <button class="btn" onclick="unlock()">🚀 Начать</button>
+  <div class="lock-error" id="lockError"></div>
+  <p style="font-size:11px;color:var(--text-dim);margin-top:12px;">Ключи нужны хотя бы для одной модели. GitHub токен — опционально.</p>
+</div>
+
 <div id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
 <div id="sidebar">
   <div class="sb-head">FreeX</div>
@@ -220,6 +266,7 @@
   <div class="sb-section" id="chatList"></div>
   <div class="sb-footer">
     <button onclick="openSettings()">⚙ Настройки / ключи</button>
+    <button onclick="lockScreen()" style="flex:0.5;">🔒</button>
   </div>
 </div>
 
@@ -233,6 +280,7 @@
 
   <div id="view">
     <div id="messages"></div>
+    <button id="scrollDownBtn" onclick="scrollToBottom()">↓</button>
   </div>
 
   <div id="hqView">
@@ -275,7 +323,7 @@
 
 <script>
 /* ---------- STORAGE ---------- */
-const LS = { chats:'freex_chats', keys:'freex_keys', hqUrl:'freex_hq_url', active:'freex_active_chat', draft:'freex_draft', hint:'freex_hint_shown' };
+const LS = { chats:'freex_chats', keys:'freex_keys', hqUrl:'freex_hq_url', active:'freex_active_chat', draft:'freex_draft', hint:'freex_hint_shown', locked:'freex_locked' };
 function loadJSON(k,f){ try{ return JSON.parse(localStorage.getItem(k)) ?? f; }catch(e){ return f; } }
 function save(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
 
@@ -286,6 +334,43 @@ let pendingImage = null;
 
 const MODELS = [{ id:'deepseek', label:'DeepSeek' }, { id:'grok', label:'Grok (xAI)' }];
 const DUO = ['deepseek','grok'];
+
+/* ---------- LOCK SCREEN ---------- */
+function checkLock(){
+  const hasKeys = keys.deepseek || keys.grok;
+  if(!hasKeys){
+    document.getElementById('lockScreen').classList.remove('hidden');
+    document.getElementById('main').style.display = 'none';
+    return true;
+  }
+  document.getElementById('lockScreen').classList.add('hidden');
+  document.getElementById('main').style.display = 'flex';
+  return false;
+}
+
+function unlock(){
+  const ds = document.getElementById('lockDeepSeek').value.trim();
+  const gk = document.getElementById('lockGrok').value.trim();
+  if(!ds && !gk){
+    document.getElementById('lockError').textContent = 'Введи хотя бы один ключ.';
+    return;
+  }
+  if(ds) keys.deepseek = ds;
+  if(gk) keys.grok = gk;
+  save(LS.keys, keys);
+  document.getElementById('lockError').textContent = '';
+  checkLock();
+  renderAll();
+  populateModelSelect();
+}
+
+function lockScreen(){
+  document.getElementById('lockScreen').classList.remove('hidden');
+  document.getElementById('main').style.display = 'none';
+  document.getElementById('lockDeepSeek').value = '';
+  document.getElementById('lockGrok').value = '';
+  document.getElementById('lockError').textContent = '';
+}
 
 /* ---------- CHAT ---------- */
 function newChat(){
@@ -329,7 +414,7 @@ function renderMessages(){
       </div>
     </div>`;
   }).join('');
-  box.scrollTop = box.scrollHeight;
+  updateScrollBtn();
 }
 
 function copyMessage(idx){
@@ -339,7 +424,6 @@ function copyMessage(idx){
     const btn = document.getElementById('copyBtn_'+idx);
     if(btn){ const orig = btn.textContent; btn.textContent = '✅ Скопировано!'; btn.classList.add('copied'); setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000); }
   }).catch(() => {
-    // fallback
     const area = document.createElement('textarea'); area.value = msg.text; document.body.appendChild(area); area.select(); document.execCommand('copy'); area.remove();
     const btn = document.getElementById('copyBtn_'+idx); if(btn){ const orig = btn.textContent; btn.textContent = '✅ Скопировано!'; setTimeout(() => { btn.textContent = orig; }, 2000); }
   });
@@ -349,6 +433,21 @@ function modelLabel(id){ return (MODELS.find(m=>m.id===id)||{}).label||id; }
 function toggleDuo(){ const chat = getActiveChat(); if(!chat) return; chat.duo = !chat.duo; save(LS.chats, chats); renderMessages(); }
 function renderAll(){ renderSidebarList(); renderMessages(); }
 function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------- SCROLL TO BOTTOM ---------- */
+const viewEl = document.getElementById('view');
+const scrollBtn = document.getElementById('scrollDownBtn');
+
+function updateScrollBtn(){
+  const atBottom = viewEl.scrollHeight - viewEl.scrollTop - viewEl.clientHeight < 20;
+  scrollBtn.classList.toggle('visible', !atBottom && viewEl.scrollHeight > viewEl.clientHeight);
+}
+viewEl.addEventListener('scroll', updateScrollBtn);
+
+function scrollToBottom(){
+  viewEl.scrollTop = viewEl.scrollHeight;
+  scrollBtn.classList.remove('visible');
+}
 
 /* ---------- COMPOSER ---------- */
 function autoGrow(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
@@ -399,12 +498,12 @@ async function sendMessage(){
       chat.messages.push({ role:'sep', text: 'Дальше отвечает: ' + modelLabel(modelId) });
       save(LS.chats, chats); renderMessages();
     }
-    // typing
     const box = document.getElementById('messages');
     const typingEl = document.createElement('div');
     typingEl.className = 'typing-wrapper';
     typingEl.innerHTML = `<div class="avatar">🔮</div><div class="typing-box"><div class="typing-label">${modelLabel(modelId)} печатает...</div><div class="dots"><span></span><span></span><span></span></div></div>`;
-    box.appendChild(typingEl); box.scrollTop = box.scrollHeight;
+    box.appendChild(typingEl);
+    viewEl.scrollTop = viewEl.scrollHeight;
 
     try{
       const reply = await callModel(modelId, chat.messages, image);
@@ -468,6 +567,11 @@ function saveSettings(){
   keys = { deepseek: document.getElementById('key_deepseek').value.trim(), grok: document.getElementById('key_grok').value.trim(), grokModel: document.getElementById('model_grok').value.trim(), github: document.getElementById('key_github').value.trim() };
   save(LS.keys, keys);
   document.getElementById('settingsModal').classList.remove('open');
+  // если ключи появились — убираем локинг
+  if(keys.deepseek || keys.grok){
+    document.getElementById('lockScreen').classList.add('hidden');
+    document.getElementById('main').style.display = 'flex';
+  }
 }
 
 /* ---------- HQ ---------- */
@@ -526,11 +630,14 @@ function toggleSidebar(force){
 }
 
 /* ---------- INIT ---------- */
-populateModelSelect = function(){
+function populateModelSelect(){
   const sel = document.getElementById('modelSelect');
   sel.innerHTML = MODELS.map(m => `<option value="${m.id}">${m.label}</option>`).join('');
   sel.onchange = () => { const c = getActiveChat(); if(c){ c.model = sel.value; save(LS.chats, chats); } };
 };
+
+// проверяем локинг
+const locked = checkLock();
 populateModelSelect();
 if(!activeId && chats.length) activeId = chats[0].id;
 renderAll(); loadDraft(); refreshSend();
