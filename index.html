@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FreeX">
-<title>FreeX</title>
+<title>FreeX — Конференция</title>
 <style>
   :root{
     --bg:#0d0d0f;
@@ -39,7 +39,6 @@
     background-position:center;
   }
 
-  /* Sidebar */
   #sidebar{
     position:fixed;top:0;left:0;height:100%;width:82%;max-width:320px;
     background:var(--bg-2);border-right:1px solid var(--line);
@@ -74,7 +73,6 @@
   }
   .sb-footer button:hover{border-color:var(--accent);}
 
-  /* Main */
   #main{flex:1;display:flex;flex-direction:column;height:100%;min-width:0;}
   #topbar{
     display:flex;align-items:center;gap:10px;padding:12px 14px;
@@ -91,13 +89,12 @@
     background:var(--bg-2);color:var(--text);border:1px solid var(--line);
     border-radius:10px;padding:6px 10px;font-size:12px;max-width:50%;
   }
-  #duoBtn{
+  #confBtn{
     background:var(--bg-2);color:var(--text-dim);border:1px solid var(--line);
     border-radius:10px;padding:6px 10px;font-size:12px;cursor:pointer;flex:none;
   }
-  #duoBtn.on{background:var(--accent-dim);color:var(--accent);border-color:var(--accent);}
+  #confBtn.on{background:var(--accent-dim);color:var(--accent);border-color:var(--accent);}
 
-  /* Chat */
   #view{flex:1;overflow-y:auto;display:flex;flex-direction:column;position:relative;}
   #messages{flex:1;padding:16px 12px 8px;display:flex;flex-direction:column;gap:6px;max-width:820px;margin:0 auto;width:100%;}
 
@@ -154,7 +151,6 @@
   #scrollDownBtn:active{transform:scale(0.9);}
   #scrollDownBtn.visible{display:flex;}
 
-  /* Composer */
   #composer{
     display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));
     border-top:1px solid var(--line);background:rgba(var(--bg-rgb, 13,13,15), 0.7);
@@ -179,7 +175,6 @@
   }
   #sendBtn:disabled{opacity:.4;}
 
-  /* HQ / GH */
   #hqView{flex:1;display:none;flex-direction:column;}
   #hqView.active{display:flex;}
   #hqFrame{flex:1;border:none;width:100%;background:#fff;}
@@ -197,7 +192,6 @@
   #ghStatus{font-size:13px;color:var(--text-dim);white-space:pre-wrap;}
   .backBtn{align-self:flex-start;background:none;border:none;color:var(--accent);font-size:13.5px;cursor:pointer;padding:4px 0 8px;margin:14px 0 0 14px;}
 
-  /* ===== SETTINGS MODAL ===== */
   .modal-overlay{
     position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);
     display:none;align-items:center;justify-content:center;z-index:60;
@@ -264,7 +258,7 @@
     <button id="hamb" onclick="toggleSidebar()">☰</button>
     <div id="chatTitle">FreeX</div>
     <select id="modelSelect"></select>
-    <button id="duoBtn" onclick="toggleDuo()" title="Два агента по очереди с историей">👥 Дуо</button>
+    <button id="confBtn" onclick="toggleConf()" title="Режим Конференция — все агенты отвечают по очереди">🎯 Конференция</button>
   </div>
 
   <div id="view">
@@ -312,7 +306,6 @@
       <button class="tab" data-tab="tabData" onclick="switchTab('tabData')">💾 Данные</button>
     </div>
 
-    <!-- TAB 1: КЛЮЧИ -->
     <div class="tab-content active" id="tabKeys">
       <div class="keyRow">
         <label>DeepSeek</label>
@@ -320,17 +313,17 @@
         <a class="link" href="https://platform.deepseek.com/api_keys" target="_blank">📌 Получить ключ</a>
       </div>
       <div class="keyRow">
-        <label>GitHub Token (для GPT-4o, DeepSeek-R1, Llama 3)</label>
+        <label>GitHub Token (GPT-4o, DeepSeek-R1)</label>
         <input id="key_github" placeholder="ghp_...">
         <a class="link" href="https://github.com/settings/tokens" target="_blank">📌 Получить токен</a>
       </div>
       <button class="btn-primary" onclick="saveSettings()">💾 Сохранить ключи</button>
       <div style="font-size:12px;color:var(--text-dim);margin-top:8px;padding:10px;background:var(--bg-3);border-radius:10px;">
-        ✅ Работающие модели: DeepSeek (прямой) · GPT-4o (GitHub) · DeepSeek-R1 (GitHub)
+        ✅ Работающие модели: DeepSeek · GPT-4o (GitHub) · DeepSeek-R1 (GitHub)<br>
+        🎯 Включи «Конференцию» — все трое ответят по очереди!
       </div>
     </div>
 
-    <!-- TAB 2: ВНЕШНИЙ ВИД -->
     <div class="tab-content" id="tabAppearance">
       <div class="setting-group">
         <label>Тема</label>
@@ -340,7 +333,6 @@
           <button class="theme-btn" data-theme="system" onclick="setTheme('system')">⚙️ Системная</button>
         </div>
       </div>
-
       <div class="setting-group">
         <label>Обои</label>
         <div class="wallpaper-options">
@@ -353,7 +345,6 @@
       </div>
     </div>
 
-    <!-- TAB 3: ДАННЫЕ -->
     <div class="tab-content" id="tabData">
       <div class="setting-group">
         <button class="btn-secondary" onclick="exportData()">📤 Экспорт чатов (JSON)</button>
@@ -378,15 +369,16 @@ let pendingImage = null;
 /* ===== МОДЕЛИ ===== */
 const MODELS = [
   { id:'deepseek', label:'DeepSeek', provider:'deepseek', keyField:'key_deepseek' },
-  { id:'github_gpt4o', label:'GPT-4o (GitHub Models)', provider:'github', model:'gpt-4o', keyField:'key_github' },
-  { id:'github_deepseek_r1', label:'DeepSeek-R1 (GitHub Models)', provider:'github', model:'DeepSeek-R1', keyField:'key_github' }
+  { id:'github_gpt4o', label:'GPT-4o (GitHub)', provider:'github', model:'gpt-4o', keyField:'key_github' },
+  { id:'github_deepseek_r1', label:'DeepSeek-R1 (GitHub)', provider:'github', model:'DeepSeek-R1', keyField:'key_github' }
 ];
 
-const DUO = ['deepseek','github_gpt4o'];
+/* ===== КОНФЕРЕНЦИЯ — все модели ===== */
+const CONFERENCE_MODELS = ['deepseek','github_gpt4o','github_deepseek_r1'];
 
 /* ---------- EXPORT / IMPORT ---------- */
 function exportData(){
-  const data = { exported: new Date().toISOString(), chats: chats, version: 'FreeX v2.6' };
+  const data = { exported: new Date().toISOString(), chats: chats, version: 'FreeX v2.7' };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -442,7 +434,6 @@ function applyTheme(theme){
   localStorage.setItem(LS.theme, theme);
   document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === theme));
 }
-
 function setTheme(theme){ applyTheme(theme); }
 function applyWallpaper(type, data){
   const app = document.getElementById('app');
@@ -473,11 +464,11 @@ function loadThemeAndWallpaper(){
 
 /* ---------- CHAT ---------- */
 function newChat(){
-  const chat = { id:'c'+Date.now(), title:'Новый чат', model:MODELS[0].id, messages:[] };
+  const chat = { id:'c'+Date.now(), title:'Новый чат', model:MODELS[0].id, conf:false, messages:[] };
   chats.unshift(chat); activeId = chat.id; save(LS.chats, chats); localStorage.setItem(LS.active, activeId);
   renderAll(); toggleSidebar(false); closeHQ();
   if(!localStorage.getItem(LS.hint)){
-    chat.messages.push({ role:'ai', text:'💡 Enter — новая строка, Cmd/Ctrl+Enter — отправить' });
+    chat.messages.push({ role:'ai', text:'💡 Включи «Конференцию» — все агенты ответят по очереди!' });
     localStorage.setItem(LS.hint,'1'); save(LS.chats, chats);
   }
 }
@@ -493,10 +484,14 @@ function renderSidebarList(){
 function renderMessages(){
   const chat = getActiveChat();
   const box = document.getElementById('messages');
-  document.getElementById('chatTitle').textContent = chat ? chat.title : 'FreeX';
-  if(chat){ document.getElementById('modelSelect').value = chat.model; document.getElementById('modelSelect').disabled = !!chat.duo; document.getElementById('duoBtn').classList.toggle('on', !!chat.duo); }
+  document.getElementById('chatTitle').textContent = chat ? (chat.conf ? '🎯 Конференция' : chat.title) : 'FreeX';
+  if(chat){ document.getElementById('modelSelect').value = chat.model; document.getElementById('modelSelect').disabled = !!chat.conf; document.getElementById('confBtn').classList.toggle('on', !!chat.conf); }
   if(!chat){ box.innerHTML = `<div class="empty">Нет открытого чата.<br><b>+ Новый чат</b> в меню слева.</div>`; return; }
-  if(chat.messages.length === 0){ box.innerHTML = chat.duo ? `<div class="empty">Дуо включён: два агента по очереди с историей.</div>` : `<div class="empty">Выбери модель и начни диалог.</div>`; return; }
+  if(chat.messages.length === 0){
+    const hint = chat.conf ? 'Включена Конференция: все 3 агента ответят по очереди!' : 'Выбери модель и начни диалог. Включи «Конференцию» для 3 агентов.';
+    box.innerHTML = `<div class="empty">${hint}</div>`;
+    return;
+  }
 
   box.innerHTML = chat.messages.map((m, idx) => {
     if(m.role==='sep') return `<div class="sepMsg">${escapeHtml(m.text)}</div>`;
@@ -529,7 +524,13 @@ function copyMessage(idx){
 }
 
 function modelLabel(id){ return (MODELS.find(m=>m.id===id)||{}).label||id; }
-function toggleDuo(){ const chat = getActiveChat(); if(!chat) return; chat.duo = !chat.duo; save(LS.chats, chats); renderMessages(); }
+function toggleConf(){
+  const chat = getActiveChat();
+  if(!chat){ newChat(); chat = getActiveChat(); }
+  chat.conf = !chat.conf;
+  save(LS.chats, chats);
+  renderMessages();
+}
 function renderAll(){ renderSidebarList(); renderMessages(); }
 function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
@@ -587,12 +588,13 @@ async function sendMessage(){
   renderMessages();
 
   document.getElementById('sendBtn').disabled = true;
-  const sequence = chat.duo ? DUO : [chat.model];
+
+  const sequence = chat.conf ? CONFERENCE_MODELS : [chat.model];
 
   for(let i=0; i<sequence.length; i++){
     const modelId = sequence[i];
     const model = MODELS.find(m=>m.id===modelId);
-    if(chat.duo && i > 0){
+    if(chat.conf && i > 0){
       chat.messages.push({ role:'sep', text: 'Дальше отвечает: ' + modelLabel(modelId) });
       save(LS.chats, chats); renderMessages();
     }
@@ -616,7 +618,7 @@ async function sendMessage(){
     viewEl.scrollTop = viewEl.scrollHeight;
 
     try{
-      const history = chat.messages.filter(m => m.role !== 'sep').map(m => ({
+      const history = chat.messages.filter(m => m.role !== 'sep' && m.role === 'user' || m.role === 'ai').map(m => ({
         role: m.role === 'user' ? 'user' : 'assistant',
         content: m.text
       }));
@@ -645,12 +647,7 @@ async function callModel(modelId, history, apiKey){
     const r = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
-      body: JSON.stringify({
-        model:'deepseek-chat',
-        messages: history,
-        temperature:0.7,
-        max_tokens:4000
-      })
+      body: JSON.stringify({ model:'deepseek-chat', messages: history, temperature:0.7, max_tokens:4000 })
     });
     const d = await r.json();
     if(!r.ok) throw new Error(d.error?.message || 'DeepSeek: ошибка');
@@ -661,12 +658,7 @@ async function callModel(modelId, history, apiKey){
     const r = await fetch('https://models.inference.ai.azure.com/chat/completions?api-version=2024-02-15-preview', {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
-      body: JSON.stringify({
-        model: model.model,
-        messages: history,
-        temperature:0.7,
-        max_tokens:4000
-      })
+      body: JSON.stringify({ model: model.model, messages: history, temperature:0.7, max_tokens:4000 })
     });
     const d = await r.json();
     if(!r.ok) throw new Error(d.error?.message || 'GitHub Models: ошибка');
