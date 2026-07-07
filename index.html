@@ -59,12 +59,13 @@
     color:var(--text-dim);text-align:center;font-size:13.5px;cursor:pointer;
   }
   .sb-newbtn:hover{border-color:var(--accent);color:var(--accent);}
-  .sb-footer{padding:10px;border-top:1px solid var(--line);display:flex;gap:8px;}
+  .sb-footer{padding:10px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;}
   .sb-footer button{
     flex:1;background:var(--bg-3);border:1px solid var(--line);color:var(--text);
     padding:10px;border-radius:10px;font-size:13px;cursor:pointer;
   }
   .sb-footer button:hover{border-color:var(--accent);}
+  .sb-footer .exp-btn{flex:0 0 auto;padding:10px 14px;}
 
   /* Main */
   #main{flex:1;display:flex;flex-direction:column;height:100%;min-width:0;}
@@ -198,9 +199,11 @@
   #settingsSheet h3{margin:6px 0 14px;font-size:17px;}
   .keyRow{margin-bottom:14px;}
   .keyRow label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:5px;}
-  .keyRow .two{display:flex;gap:8px;}
   .keyRow input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg-3);color:var(--text);font-size:13.5px;}
   .keyRow .link{font-size:11px;color:var(--accent);margin-top:2px;display:inline-block;}
+  .keyRow .status{font-size:11px;margin-left:8px;}
+  .keyRow .status.ok{color:#4caf50;}
+  .keyRow .status.fail{color:var(--danger);}
   .closeSettings{width:100%;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:14.5px;margin-top:6px;cursor:pointer;}
 </style>
 </head>
@@ -215,7 +218,8 @@
   <div class="sb-label">Чаты</div>
   <div class="sb-section" id="chatList"></div>
   <div class="sb-footer">
-    <button onclick="openSettings()">⚙ Настройки / ключи</button>
+    <button onclick="openSettings()">⚙ Настройки</button>
+    <button class="exp-btn" onclick="exportData()">💾 Экспорт</button>
   </div>
 </div>
 
@@ -224,7 +228,7 @@
     <button id="hamb" onclick="toggleSidebar()">☰</button>
     <div id="chatTitle">FreeX</div>
     <select id="modelSelect"></select>
-    <button id="duoBtn" onclick="toggleDuo()" title="DeepSeek + Grok по очереди">👥 Дуо</button>
+    <button id="duoBtn" onclick="toggleDuo()" title="Два агента по очереди с историей">👥 Дуо</button>
   </div>
 
   <div id="view">
@@ -251,7 +255,7 @@
   </div>
 
   <div id="composer">
-    <button class="attach-btn" onclick="document.getElementById('fileInput').click()">📎</button>
+    <button class="attach-btn" onclick="document.getElementById('fileInput').click()" title="Изображения пока не отправляются в модели (в разработке)">📎</button>
     <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleImage(event)">
     <textarea id="input" rows="1" placeholder="Написать..." onkeydown="onKeyDown(event)" oninput="autoGrow(this)"></textarea>
     <button id="sendBtn" onclick="sendMessage()">➤</button>
@@ -263,21 +267,21 @@
     <h3>⚙️ Ключи моделей (хранятся только в твоём браузере)</h3>
 
     <div class="keyRow">
-      <label>OpenRouter API ключ (рекомендую — один ключ на всё)</label>
+      <label>OpenRouter API ключ (для Grok, Kimi, Qwen, Gemini, Llama, DeepSeek R1)</label>
       <input id="key_openrouter" placeholder="sk-or-...">
-      <a class="link" href="https://openrouter.ai/keys" target="_blank">📌 Как получить: openrouter.ai/keys → Create Key</a>
+      <a class="link" href="https://openrouter.ai/keys" target="_blank">📌 Получить ключ → openrouter.ai/keys</a>
     </div>
 
     <div class="keyRow">
-      <label>GitHub Token (для GitHub Models)</label>
+      <label>GitHub Token (для GitHub Models: GPT-4o, DeepSeek-R1, Llama 3)</label>
       <input id="key_github" placeholder="ghp_...">
-      <a class="link" href="https://github.com/settings/tokens" target="_blank">📌 Как получить: GitHub Settings → Developer settings → Personal access tokens → Generate new token</a>
+      <a class="link" href="https://github.com/settings/tokens" target="_blank">📌 Получить токен → GitHub Settings → Tokens</a>
     </div>
 
     <div style="font-size:12px;color:var(--text-dim);margin-top:8px;padding:10px;background:var(--bg-3);border-radius:10px;">
-      <b>Бесплатные модели через OpenRouter:</b> Grok, Kimi, Qwen, Gemini 2.0 Flash, Llama 3.3 70B, DeepSeek R1, GPT-OSS-20B и другие <a href="https://openrouter.ai/collections/free-models" target="_blank" style="color:var(--accent);">(полный список)</a>.
-      <br><br>
-      <b>Через GitHub Token:</b> GPT-4.1, GPT-4o, DeepSeek-R1, Llama 3, Phi-4 и другие.
+      <b>Бесплатные модели через OpenRouter:</b> Grok, Kimi, Qwen, Gemini 2.0 Flash, Llama 3.3 70B, DeepSeek R1 и другие.<br>
+      <b>Через GitHub Token:</b> GPT-4o, DeepSeek-R1, Llama 3, Phi-4.<br>
+      <span style="color:var(--danger);">⚠️ Изображения пока не передаются в модели — кнопка 📎 в разработке.</span>
     </div>
 
     <button class="closeSettings" onclick="saveSettings()">💾 Сохранить и закрыть</button>
@@ -295,27 +299,35 @@ let keys  = loadJSON(LS.keys, {});
 let activeId = localStorage.getItem(LS.active) || null;
 let pendingImage = null;
 
-/* ===== МОДЕЛИ (через OpenRouter + GitHub Models) ===== */
+/* ===== МОДЕЛИ ===== */
 const MODELS = [
-  { id:'openrouter_grok', label:'Grok (через OpenRouter)', provider:'openrouter', model:'x-ai/grok-4-fast:free', keyField:'key_openrouter' },
-  { id:'openrouter_kimi', label:'Kimi (через OpenRouter)', provider:'openrouter', model:'moonshotai/kimi-k2.7:free', keyField:'key_openrouter' },
-  { id:'openrouter_qwen', label:'Qwen (через OpenRouter)', provider:'openrouter', model:'qwen/qwen-2.5-72b-instruct:free', keyField:'key_openrouter' },
-  { id:'openrouter_gemini', label:'Gemini 2.0 Flash (через OpenRouter)', provider:'openrouter', model:'google/gemini-2.0-flash-exp:free', keyField:'key_openrouter' },
-  { id:'openrouter_llama', label:'Llama 3.3 70B (через OpenRouter)', provider:'openrouter', model:'meta-llama/llama-3.3-70b-instruct:free', keyField:'key_openrouter' },
-  { id:'openrouter_deepseek', label:'DeepSeek R1 (через OpenRouter)', provider:'openrouter', model:'deepseek/deepseek-r1-0528:free', keyField:'key_openrouter' },
+  { id:'openrouter_grok', label:'Grok (OpenRouter)', provider:'openrouter', model:'x-ai/grok-4-fast:free', keyField:'key_openrouter' },
+  { id:'openrouter_kimi', label:'Kimi (OpenRouter)', provider:'openrouter', model:'moonshotai/kimi-k2.7:free', keyField:'key_openrouter' },
+  { id:'openrouter_qwen', label:'Qwen (OpenRouter)', provider:'openrouter', model:'qwen/qwen-2.5-72b-instruct:free', keyField:'key_openrouter' },
+  { id:'openrouter_gemini', label:'Gemini 2.0 Flash (OpenRouter)', provider:'openrouter', model:'google/gemini-2.0-flash-exp:free', keyField:'key_openrouter' },
+  { id:'openrouter_llama', label:'Llama 3.3 70B (OpenRouter)', provider:'openrouter', model:'meta-llama/llama-3.3-70b-instruct:free', keyField:'key_openrouter' },
+  { id:'openrouter_deepseek', label:'DeepSeek R1 (OpenRouter)', provider:'openrouter', model:'deepseek/deepseek-r1-0528:free', keyField:'key_openrouter' },
   { id:'github_gpt4o', label:'GPT-4o (GitHub Models)', provider:'github', model:'github/gpt-4o', keyField:'key_github' },
   { id:'github_deepseek', label:'DeepSeek-R1 (GitHub Models)', provider:'github', model:'github/deepseek-r1', keyField:'key_github' },
   { id:'github_llama', label:'Llama 3 (GitHub Models)', provider:'github', model:'github/llama-3', keyField:'key_github' }
 ];
 
-/* ===== ДУО (по умолчанию два агента) ===== */
+/* ===== ДУО (с полной историей) ===== */
 const DUO = ['openrouter_grok','openrouter_kimi'];
 
-/* ===== ССЫЛКИ НА КЛЮЧИ ===== */
-const KEY_LINKS = {
-  key_openrouter: 'https://openrouter.ai/keys',
-  key_github: 'https://github.com/settings/tokens'
-};
+/* ===== ФУНКЦИЯ ЭКСПОРТА ===== */
+function exportData(){
+  const data = {
+    exported: new Date().toISOString(),
+    chats: chats,
+    version: 'FreeX v2.3'
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `freex_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
 
 /* ---------- CHAT ---------- */
 function newChat(){
@@ -342,7 +354,7 @@ function renderMessages(){
   document.getElementById('chatTitle').textContent = chat ? chat.title : 'FreeX';
   if(chat){ document.getElementById('modelSelect').value = chat.model; document.getElementById('modelSelect').disabled = !!chat.duo; document.getElementById('duoBtn').classList.toggle('on', !!chat.duo); }
   if(!chat){ box.innerHTML = `<div class="empty">Нет открытого чата.<br><b>+ Новый чат</b> в меню слева.</div>`; return; }
-  if(chat.messages.length === 0){ box.innerHTML = chat.duo ? `<div class="empty">Дуо включён: два агента отвечают по очереди.</div>` : `<div class="empty">Выбери модель и начни диалог.</div>`; return; }
+  if(chat.messages.length === 0){ box.innerHTML = chat.duo ? `<div class="empty">Дуо включён: два агента отвечают по очереди с учётом истории.</div>` : `<div class="empty">Выбери модель и начни диалог.</div>`; return; }
 
   box.innerHTML = chat.messages.map((m, idx) => {
     if(m.role==='sep') return `<div class="sepMsg">${escapeHtml(m.text)}</div>`;
@@ -413,23 +425,27 @@ function handleImage(e){
   reader.onload = function(ev){ pendingImage = ev.target.result; };
   reader.readAsDataURL(file);
   e.target.value = '';
+  // предупреждение
+  const box = document.getElementById('messages');
+  const warn = document.createElement('div');
+  warn.className = 'sepMsg';
+  warn.textContent = '📎 Изображение загружено, но пока не передаётся в модели (в разработке).';
+  box.appendChild(warn);
+  setTimeout(() => { if(warn.parentNode) warn.remove(); }, 4000);
 }
 
+/* ---------- ОТПРАВКА (с полной историей) ---------- */
 async function sendMessage(){
   const input = document.getElementById('input');
   let text = input.value.trim();
-  let image = pendingImage;
-  pendingImage = null;
-  if(!text && !image) return;
+  if(!text) return;
   localStorage.removeItem(LS.draft);
 
   let chat = getActiveChat();
   if(!chat){ newChat(); chat = getActiveChat(); }
 
-  let userMsg = text || (image ? '📷 Изображение' : '');
-  if(image) userMsg += (text ? '\n\n' : '') + '[Изображение вставлено]';
-  chat.messages.push({ role:'user', text: userMsg, image: image });
-  if(chat.messages.length === 1) chat.title = (text||'Изображение').slice(0,30);
+  chat.messages.push({ role:'user', text });
+  if(chat.messages.length === 1) chat.title = text.slice(0,30);
   save(LS.chats, chats);
   input.value=''; autoGrow(input); refreshSend();
   renderMessages();
@@ -449,7 +465,7 @@ async function sendMessage(){
     const keyField = model?.keyField || '';
     const apiKey = keys[keyField] || '';
     if(!apiKey){
-      const link = KEY_LINKS[keyField] || '';
+      const link = keyField === 'key_openrouter' ? 'https://openrouter.ai/keys' : 'https://github.com/settings/tokens';
       const msg = `⚠️ Нет API ключа для ${modelLabel(modelId)}.\n\n📌 Получить ключ: ${link}`;
       chat.messages.push({ role:'ai', model: modelId, text: msg });
       save(LS.chats, chats); renderMessages();
@@ -465,7 +481,12 @@ async function sendMessage(){
     viewEl.scrollTop = viewEl.scrollHeight;
 
     try{
-      const reply = await callModel(modelId, chat.messages, image, apiKey);
+      // ===== ПЕРЕДАЁМ ПОЛНУЮ ИСТОРИЮ (все сообщения чата) =====
+      const history = chat.messages.filter(m => m.role !== 'sep').map(m => ({
+        role: m.role === 'user' ? 'user' : 'assistant',
+        content: m.text
+      }));
+      const reply = await callModel(modelId, history, apiKey);
       chat.messages.push({ role:'ai', model: modelId, text: reply });
     }catch(err){
       chat.messages.push({ role:'ai', model: modelId, text: '❌ '+err.message });
@@ -478,17 +499,15 @@ async function sendMessage(){
 
 function refreshSend(){
   const input = document.getElementById('input');
-  document.getElementById('sendBtn').disabled = input.value.trim() === '' && !pendingImage;
+  document.getElementById('sendBtn').disabled = input.value.trim() === '';
 }
 document.getElementById('input').addEventListener('input', refreshSend);
 
 /* ===== ВЫЗОВ МОДЕЛЕЙ ===== */
-async function callModel(modelId, messages, image, apiKey){
-  const prompt = messages.filter(m=>m.role==='user').pop()?.text || '';
+async function callModel(modelId, history, apiKey){
   const model = MODELS.find(m=>m.id===modelId);
 
   if(model?.provider === 'openrouter'){
-    // OpenRouter API — совместим с OpenAI [citation:5]
     const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -499,7 +518,7 @@ async function callModel(modelId, messages, image, apiKey){
       },
       body: JSON.stringify({
         model: model.model,
-        messages: [{ role: 'user', content: prompt }],
+        messages: history,
         temperature: 0.7
       })
     });
@@ -509,7 +528,6 @@ async function callModel(modelId, messages, image, apiKey){
   }
 
   if(model?.provider === 'github'){
-    // GitHub Models — совместим с OpenAI [citation:12]
     const r = await fetch('https://models.inference.ai.azure.com/chat/completions', {
       method: 'POST',
       headers: {
@@ -518,7 +536,7 @@ async function callModel(modelId, messages, image, apiKey){
       },
       body: JSON.stringify({
         model: model.model.replace('github/',''),
-        messages: [{ role: 'user', content: prompt }],
+        messages: history,
         temperature: 0.7,
         max_tokens: 4000
       })
@@ -576,7 +594,11 @@ function openGH(){
   document.getElementById('chatTitle').textContent = 'Деплой на GitHub'; toggleSidebar(false); renderSidebarList();
 }
 function closeGH(){ hqOpen = false; document.getElementById('view').style.display='flex'; document.getElementById('composer').style.display='flex'; document.getElementById('ghView').classList.remove('active'); }
-function utf8ToBase64(str){ return btoa(unescape(encodeURIComponent(str))); }
+function utf8ToBase64(str){
+  const bytes = new TextEncoder().encode(str);
+  const bin = String.fromCharCode(...bytes);
+  return btoa(bin);
+}
 async function pushToGitHub(){
   const token = keys.key_github, status = document.getElementById('ghStatus'), content = document.getElementById('ghContent').value;
   if(!token){ status.textContent = 'Нет GitHub-токена — открой Настройки.'; return; }
