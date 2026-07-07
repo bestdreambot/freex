@@ -260,17 +260,26 @@
 
 <div id="settingsModal">
   <div id="settingsSheet">
-    <h3>⚙️ Ключи моделей</h3>
-    <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;">Ключи хранятся только в твоём браузере. Если ключа нет — при отправке будет ссылка, где его взять.</p>
+    <h3>⚙️ Ключи моделей (хранятся только в твоём браузере)</h3>
 
-    <div class="keyRow"><label>DeepSeek</label><input id="key_deepseek" placeholder="sk-..."><a class="link" href="https://platform.deepseek.com/api_keys" target="_blank">получить ключ →</a></div>
-    <div class="keyRow"><label>Grok (xAI)</label><input id="key_grok" placeholder="xai-..."><a class="link" href="https://console.x.ai" target="_blank">получить ключ →</a></div>
-    <div class="keyRow"><label>Qwen (Alibaba)</label><input id="key_qwen" placeholder="sk-..."><a class="link" href="https://dashscope.aliyuncs.com" target="_blank">получить ключ →</a></div>
-    <div class="keyRow"><label>Kimi (Moonshot)</label><input id="key_kimi" placeholder="sk-..."><a class="link" href="https://platform.moonshot.cn" target="_blank">получить ключ →</a></div>
-    <div class="keyRow"><label>Gemini (Google)</label><input id="key_gemini" placeholder="AIza..."><a class="link" href="https://aistudio.google.com/app/apikey" target="_blank">получить ключ →</a></div>
-    <div class="keyRow"><label>GPT (OpenAI) — в плане</label><input id="key_openai" placeholder="sk-..."><a class="link" href="https://platform.openai.com/api-keys" target="_blank">получить ключ →</a></div>
+    <div class="keyRow">
+      <label>OpenRouter API ключ (рекомендую — один ключ на всё)</label>
+      <input id="key_openrouter" placeholder="sk-or-...">
+      <a class="link" href="https://openrouter.ai/keys" target="_blank">📌 Как получить: openrouter.ai/keys → Create Key</a>
+    </div>
 
-    <div class="keyRow"><label>GitHub — Personal Access Token</label><input id="key_github" placeholder="ghp_..."></div>
+    <div class="keyRow">
+      <label>GitHub Token (для GitHub Models)</label>
+      <input id="key_github" placeholder="ghp_...">
+      <a class="link" href="https://github.com/settings/tokens" target="_blank">📌 Как получить: GitHub Settings → Developer settings → Personal access tokens → Generate new token</a>
+    </div>
+
+    <div style="font-size:12px;color:var(--text-dim);margin-top:8px;padding:10px;background:var(--bg-3);border-radius:10px;">
+      <b>Бесплатные модели через OpenRouter:</b> Grok, Kimi, Qwen, Gemini 2.0 Flash, Llama 3.3 70B, DeepSeek R1, GPT-OSS-20B и другие <a href="https://openrouter.ai/collections/free-models" target="_blank" style="color:var(--accent);">(полный список)</a>.
+      <br><br>
+      <b>Через GitHub Token:</b> GPT-4.1, GPT-4o, DeepSeek-R1, Llama 3, Phi-4 и другие.
+    </div>
+
     <button class="closeSettings" onclick="saveSettings()">💾 Сохранить и закрыть</button>
   </div>
 </div>
@@ -286,23 +295,26 @@ let keys  = loadJSON(LS.keys, {});
 let activeId = localStorage.getItem(LS.active) || null;
 let pendingImage = null;
 
+/* ===== МОДЕЛИ (через OpenRouter + GitHub Models) ===== */
 const MODELS = [
-  { id:'deepseek', label:'DeepSeek', keyField:'key_deepseek' },
-  { id:'grok', label:'Grok (xAI)', keyField:'key_grok' },
-  { id:'qwen', label:'Qwen', keyField:'key_qwen' },
-  { id:'kimi', label:'Kimi', keyField:'key_kimi' },
-  { id:'gemini', label:'Gemini', keyField:'key_gemini' },
-  { id:'openai', label:'GPT (OpenAI)', keyField:'key_openai' }
+  { id:'openrouter_grok', label:'Grok (через OpenRouter)', provider:'openrouter', model:'x-ai/grok-4-fast:free', keyField:'key_openrouter' },
+  { id:'openrouter_kimi', label:'Kimi (через OpenRouter)', provider:'openrouter', model:'moonshotai/kimi-k2.7:free', keyField:'key_openrouter' },
+  { id:'openrouter_qwen', label:'Qwen (через OpenRouter)', provider:'openrouter', model:'qwen/qwen-2.5-72b-instruct:free', keyField:'key_openrouter' },
+  { id:'openrouter_gemini', label:'Gemini 2.0 Flash (через OpenRouter)', provider:'openrouter', model:'google/gemini-2.0-flash-exp:free', keyField:'key_openrouter' },
+  { id:'openrouter_llama', label:'Llama 3.3 70B (через OpenRouter)', provider:'openrouter', model:'meta-llama/llama-3.3-70b-instruct:free', keyField:'key_openrouter' },
+  { id:'openrouter_deepseek', label:'DeepSeek R1 (через OpenRouter)', provider:'openrouter', model:'deepseek/deepseek-r1-0528:free', keyField:'key_openrouter' },
+  { id:'github_gpt4o', label:'GPT-4o (GitHub Models)', provider:'github', model:'github/gpt-4o', keyField:'key_github' },
+  { id:'github_deepseek', label:'DeepSeek-R1 (GitHub Models)', provider:'github', model:'github/deepseek-r1', keyField:'key_github' },
+  { id:'github_llama', label:'Llama 3 (GitHub Models)', provider:'github', model:'github/llama-3', keyField:'key_github' }
 ];
-const DUO = ['deepseek','grok'];
 
+/* ===== ДУО (по умолчанию два агента) ===== */
+const DUO = ['openrouter_grok','openrouter_kimi'];
+
+/* ===== ССЫЛКИ НА КЛЮЧИ ===== */
 const KEY_LINKS = {
-  deepseek: 'https://platform.deepseek.com/api_keys',
-  grok: 'https://console.x.ai',
-  qwen: 'https://dashscope.aliyuncs.com',
-  kimi: 'https://platform.moonshot.cn',
-  gemini: 'https://aistudio.google.com/app/apikey',
-  openai: 'https://platform.openai.com/api-keys'
+  key_openrouter: 'https://openrouter.ai/keys',
+  key_github: 'https://github.com/settings/tokens'
 };
 
 /* ---------- CHAT ---------- */
@@ -330,7 +342,7 @@ function renderMessages(){
   document.getElementById('chatTitle').textContent = chat ? chat.title : 'FreeX';
   if(chat){ document.getElementById('modelSelect').value = chat.model; document.getElementById('modelSelect').disabled = !!chat.duo; document.getElementById('duoBtn').classList.toggle('on', !!chat.duo); }
   if(!chat){ box.innerHTML = `<div class="empty">Нет открытого чата.<br><b>+ Новый чат</b> в меню слева.</div>`; return; }
-  if(chat.messages.length === 0){ box.innerHTML = chat.duo ? `<div class="empty">Дуо включён: DeepSeek ответит первым, следом Grok.</div>` : `<div class="empty">Выбери модель и начни диалог.</div>`; return; }
+  if(chat.messages.length === 0){ box.innerHTML = chat.duo ? `<div class="empty">Дуо включён: два агента отвечают по очереди.</div>` : `<div class="empty">Выбери модель и начни диалог.</div>`; return; }
 
   box.innerHTML = chat.messages.map((m, idx) => {
     if(m.role==='sep') return `<div class="sepMsg">${escapeHtml(m.text)}</div>`;
@@ -435,10 +447,10 @@ async function sendMessage(){
 
     // Проверка ключа
     const keyField = model?.keyField || '';
-    const key = keys[keyField] || '';
-    if(!key){
-      const link = KEY_LINKS[modelId] || '';
-      const msg = `⚠️ Нет API ключа для ${modelLabel(modelId)}.\n\nПолучить ключ: ${link}`;
+    const apiKey = keys[keyField] || '';
+    if(!apiKey){
+      const link = KEY_LINKS[keyField] || '';
+      const msg = `⚠️ Нет API ключа для ${modelLabel(modelId)}.\n\n📌 Получить ключ: ${link}`;
       chat.messages.push({ role:'ai', model: modelId, text: msg });
       save(LS.chats, chats); renderMessages();
       continue;
@@ -453,7 +465,7 @@ async function sendMessage(){
     viewEl.scrollTop = viewEl.scrollHeight;
 
     try{
-      const reply = await callModel(modelId, chat.messages, image, key);
+      const reply = await callModel(modelId, chat.messages, image, apiKey);
       chat.messages.push({ role:'ai', model: modelId, text: reply });
     }catch(err){
       chat.messages.push({ role:'ai', model: modelId, text: '❌ '+err.message });
@@ -470,80 +482,67 @@ function refreshSend(){
 }
 document.getElementById('input').addEventListener('input', refreshSend);
 
-/* ---------- MODEL CALLS ---------- */
-function toOpenAIFormat(messages){
-  return messages.filter(m=>m.role!=='err'&&m.role!=='sep').map(m => ({ role: m.role==='user'?'user':'assistant', content: m.text }));
-}
-
+/* ===== ВЫЗОВ МОДЕЛЕЙ ===== */
 async function callModel(modelId, messages, image, apiKey){
   const prompt = messages.filter(m=>m.role==='user').pop()?.text || '';
   const model = MODELS.find(m=>m.id===modelId);
 
-  switch(modelId){
-    case 'deepseek': {
-      const r = await fetch('https://api.deepseek.com/v1/chat/completions', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
-        body: JSON.stringify({ model:'deepseek-chat', messages: [{role:'user', content: prompt}], temperature:0.7 })
-      });
-      const d = await r.json();
-      if(!r.ok) throw new Error(d.error?.message || 'DeepSeek: ошибка');
-      return d.choices[0].message.content;
-    }
-    case 'grok': {
-      const r = await fetch('https://api.x.ai/v1/chat/completions', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
-        body: JSON.stringify({ model: 'grok-4.3', messages: [{role:'user', content: prompt}], temperature:0.7 })
-      });
-      const d = await r.json();
-      if(!r.ok) throw new Error(d.error?.message || 'Grok: ошибка');
-      return d.choices[0].message.content;
-    }
-    case 'qwen': {
-      const r = await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
-        body: JSON.stringify({ model:'qwen-plus', input:{messages:[{role:'user', content:prompt}]}, parameters:{temperature:0.7} })
-      });
-      const d = await r.json();
-      if(!r.ok || d.code) throw new Error(d.message || 'Qwen: ошибка');
-      return d.output.choices[0].message.content;
-    }
-    case 'kimi': {
-      const r = await fetch('https://api.moonshot.cn/v1/chat/completions', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
-        body: JSON.stringify({ model:'moonshot-v1-8k', messages: [{role:'user', content: prompt}], temperature:0.7 })
-      });
-      const d = await r.json();
-      if(!r.ok) throw new Error(d.error?.message || 'Kimi: ошибка');
-      return d.choices[0].message.content;
-    }
-    case 'gemini': {
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature:0.7 } })
-      });
-      const d = await r.json();
-      if(!r.ok) throw new Error(d.error?.message || 'Gemini: ошибка');
-      return d.candidates[0].content.parts[0].text;
-    }
-    default: throw new Error('Модель '+modelId+' пока не подключена.');
+  if(model?.provider === 'openrouter'){
+    // OpenRouter API — совместим с OpenAI [citation:5]
+    const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey,
+        'HTTP-Referer': 'https://freex-xi.vercel.app',
+        'X-Title': 'FreeX'
+      },
+      body: JSON.stringify({
+        model: model.model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7
+      })
+    });
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error?.message || 'OpenRouter: ошибка');
+    return d.choices[0].message.content;
   }
+
+  if(model?.provider === 'github'){
+    // GitHub Models — совместим с OpenAI [citation:12]
+    const r = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey
+      },
+      body: JSON.stringify({
+        model: model.model.replace('github/',''),
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 4000
+      })
+    });
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error?.message || 'GitHub Models: ошибка');
+    return d.choices[0].message.content;
+  }
+
+  throw new Error('Неизвестный провайдер для модели ' + modelId);
 }
 
 /* ---------- SETTINGS ---------- */
 function openSettings(){
-  ['key_deepseek','key_grok','key_qwen','key_kimi','key_gemini','key_openai','key_github'].forEach(k => {
-    document.getElementById(k).value = keys[k] || '';
+  ['key_openrouter','key_github'].forEach(k => {
+    const el = document.getElementById(k);
+    if(el) el.value = keys[k] || '';
   });
   document.getElementById('settingsModal').classList.add('open');
 }
 function saveSettings(){
-  ['key_deepseek','key_grok','key_qwen','key_kimi','key_gemini','key_openai','key_github'].forEach(k => {
-    keys[k] = document.getElementById(k).value.trim();
+  ['key_openrouter','key_github'].forEach(k => {
+    const el = document.getElementById(k);
+    if(el) keys[k] = el.value.trim();
   });
   save(LS.keys, keys);
   document.getElementById('settingsModal').classList.remove('open');
