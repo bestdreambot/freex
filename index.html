@@ -95,13 +95,10 @@
   .msg.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px;}
   .msg.ai{align-self:flex-start;background:var(--bg-2);border:1px solid var(--line);border-bottom-left-radius:4px;}
   .msg.err{align-self:flex-start;background:#3a1f22;border:1px solid var(--danger);color:#ffb3b3;}
-  .msg .model-label{font-size:11px;color:var(--text-dim);margin-bottom:4px;}
-  .typing{align-self:flex-start;display:flex;flex-direction:column;gap:4px;padding:12px 14px;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);border-bottom-left-radius:4px;}
-  .typing .typing-label{font-size:12px;color:var(--text-dim);}
-  .typing .dots{display:flex;gap:5px;padding-top:2px;}
-  .typing .dots span{width:6px;height:6px;border-radius:50%;background:var(--text-dim);animation:blink 1.2s infinite ease-in-out;}
-  .typing .dots span:nth-child(2){animation-delay:.2s;}
-  .typing .dots span:nth-child(3){animation-delay:.4s;}
+  .typing{align-self:flex-start;display:flex;gap:5px;padding:12px 14px;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);border-bottom-left-radius:4px;}
+  .typing span{width:6px;height:6px;border-radius:50%;background:var(--text-dim);animation:blink 1.2s infinite ease-in-out;}
+  .typing span:nth-child(2){animation-delay:.2s;}
+  .typing span:nth-child(3){animation-delay:.4s;}
   @keyframes blink{0%,80%,100%{opacity:.25;}40%{opacity:1;}}
 
   .empty{margin:auto;text-align:center;color:var(--text-dim);padding:30px;}
@@ -136,6 +133,7 @@
   #ghView.active{display:flex;}
   #ghBox{display:flex;flex-direction:column;gap:10px;height:100%;}
   .ghHead{font-size:13px;color:var(--text-dim);line-height:1.4;}
+  #ghFileSelect{background:var(--bg-3);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:13.5px;}
   #ghContent{
     flex:1;min-height:220px;resize:vertical;background:var(--bg-2);color:var(--text);
     border:1px solid var(--line);border-radius:10px;padding:10px;font-family:monospace;font-size:12px;
@@ -207,9 +205,13 @@
     <button class="backBtn" onclick="closeHQ()">← Назад к чату</button>
     <div id="ghBox">
       <div class="ghHead">
-        Вставь сюда новый код index.html (то, что тебе присылает Claude) и нажми «Отправить». Файл в bestdreambot/freex обновится напрямую, без Grok.
+        Вставь сюда новый код и нажми «Отправить». Файл в bestdreambot/freex обновится напрямую, без Grok.
       </div>
-      <textarea id="ghContent" placeholder="<!DOCTYPE html>..."></textarea>
+      <select id="ghFileSelect">
+        <option value="index.html">index.html — сам сайт</option>
+        <option value="start.md">start.md — документация</option>
+      </select>
+      <textarea id="ghContent" placeholder="Вставь содержимое файла..."></textarea>
       <div class="ghRow">
         <button id="ghPushBtn" onclick="pushToGitHub()">⬆ Отправить в GitHub</button>
       </div>
@@ -218,7 +220,7 @@
   </div>
 
   <div id="composer">
-    <textarea id="input" rows="1" placeholder="Написать... (Enter — новая строка, Cmd/Ctrl+Enter — отправить)" onkeydown="onKeyDown(event)" oninput="autoGrow(this)"></textarea>
+    <textarea id="input" rows="1" placeholder="Написать... (Cmd+Enter — отправить)" onkeydown="onKeyDown(event)" oninput="autoGrow(this)"></textarea>
     <button id="sendBtn" onclick="sendMessage()">➤</button>
   </div>
 </div>
@@ -253,14 +255,12 @@ const LS = {
   chats:  'freex_chats',
   keys:   'freex_keys',
   hqUrl:  'freex_hq_url',
-  active: 'freex_active_chat',
-  draft:  'freex_draft',
-  hint:   'freex_hint_shown'
+  active: 'freex_active_chat'
 };
 function loadJSON(key, fallback){ try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }catch(e){ return fallback; } }
 function save(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
 
-let chats = loadJSON(LS.chats, []);
+let chats = loadJSON(LS.chats, []);          // [{id,title,model,messages:[{role,text}]}]
 let keys  = loadJSON(LS.keys, {});
 let activeId = localStorage.getItem(LS.active) || null;
 
@@ -269,7 +269,7 @@ const MODELS = [
   { id:'deepseek', label:'DeepSeek' },
   { id:'grok',     label:'Grok (xAI)' }
 ];
-const DUO = ['deepseek','grok'];
+const DUO = ['deepseek','grok']; // Дуо-режим: кто отвечает и в каком порядке
 
 function populateModelSelect(){
   const sel = document.getElementById('modelSelect');
@@ -287,12 +287,6 @@ function newChat(){
   renderAll();
   toggleSidebar(false);
   closeHQ();
-  // Показать подсказку при первом запуске
-  if(!localStorage.getItem(LS.hint)){
-    chat.messages.push({ role:'ai', text:'💡 Подсказка: Enter — новая строка, Cmd/Ctrl+Enter — отправить' });
-    localStorage.setItem(LS.hint, '1');
-    save(LS.chats, chats);
-  }
 }
 function getActiveChat(){ return chats.find(c => c.id === activeId); }
 function selectChat(id){
@@ -335,7 +329,7 @@ function renderMessages(){
   }
   box.innerHTML = chat.messages.map(m => {
     if(m.role==='sep') return `<div class="sepMsg">${escapeHtml(m.text)}</div>`;
-    const label = m.model ? `<div class="model-label">${modelLabel(m.model)}</div>` : '';
+    const label = m.model ? `<div style="font-size:11px;color:var(--text-dim);margin-bottom:4px;">${modelLabel(m.model)}</div>` : '';
     return `<div class="msg ${m.role}">${label}${escapeHtml(m.text)}</div>`;
   }).join('');
   box.scrollTop = box.scrollHeight;
@@ -354,54 +348,26 @@ function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 
 /* ---------- composer ---------- */
 function autoGrow(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
-
-// Адаптивный Enter: на мобиле — отправка, на десктопе — новая строка
-function onKeyDown(e){
-  const isMobile = /iPhone|iPad|iPod|Android/.test(navigator.userAgent);
-  if(e.key === 'Enter'){
-    if(isMobile && !e.shiftKey){
-      e.preventDefault();
-      sendMessage();
-      return;
-    }
-    if(!isMobile && (e.metaKey || e.ctrlKey)){
-      e.preventDefault();
-      sendMessage();
-      return;
-    }
-    // В остальных случаях Enter = новая строка (стандартное поведение)
+function onKeyDown(e){ 
+  // Enter — новая строка
+  // Cmd+Enter или Ctrl+Enter — отправка
+  if(e.key === 'Enter' && (e.metaKey || e.ctrlKey)){ 
+    e.preventDefault(); 
+    sendMessage(); 
   }
 }
-
-/* ---------- авто-сохранение черновика ---------- */
-function saveDraft(){
-  const input = document.getElementById('input');
-  localStorage.setItem(LS.draft, input.value);
-}
-function loadDraft(){
-  const draft = localStorage.getItem(LS.draft) || '';
-  const input = document.getElementById('input');
-  if(draft){
-    input.value = draft;
-    autoGrow(input);
-    refreshSend();
-  }
-}
-document.getElementById('input').addEventListener('input', saveDraft);
 
 async function sendMessage(){
   const input = document.getElementById('input');
   const text = input.value.trim();
   if(!text) return;
-  localStorage.removeItem(LS.draft); // очищаем черновик после отправки
-
   let chat = getActiveChat();
   if(!chat){ newChat(); chat = getActiveChat(); }
 
   chat.messages.push({ role:'user', text });
   if(chat.messages.length === 1) chat.title = text.slice(0,30);
   save(LS.chats, chats);
-  input.value=''; autoGrow(input); refreshSend();
+  input.value=''; autoGrow(input);
   renderMessages();
 
   document.getElementById('sendBtn').disabled = true;
@@ -416,11 +382,7 @@ async function sendMessage(){
     }
     const box = document.getElementById('messages');
     const typingEl = document.createElement('div');
-    typingEl.className='typing';
-    typingEl.innerHTML = `
-      <div class="typing-label">${modelLabel(modelId)} печатает...</div>
-      <div class="dots"><span></span><span></span><span></span></div>
-    `;
+    typingEl.className='typing'; typingEl.innerHTML='<span></span><span></span><span></span>';
     box.appendChild(typingEl); box.scrollTop = box.scrollHeight;
     try{
       const reply = await callModel(modelId, chat.messages);
@@ -434,13 +396,9 @@ async function sendMessage(){
   document.getElementById('sendBtn').disabled = false;
 }
 
-function refreshSend(){
-  const input = document.getElementById('input');
-  document.getElementById('sendBtn').disabled = input.value.trim() === '';
-}
-document.getElementById('input').addEventListener('input', refreshSend);
-
-/* ---------- model calls ---------- */
+/* ---------- model calls ----------
+   Каждая функция получает (apiKey, model?, messages[]) и возвращает текст ответа.
+   Форматы messages -> [{role:'user'|'ai', text}]; конвертим в role user/assistant. */
 function toOpenAIFormat(messages){
   return messages.filter(m=>m.role!=='err' && m.role!=='sep').map(m => ({ role: m.role==='user' ? 'user':'assistant', content: m.text }));
 }
@@ -448,6 +406,7 @@ function toOpenAIFormat(messages){
 async function callModel(modelKey, messages){
   const k = keys;
   switch(modelKey){
+
     case 'deepseek': {
       if(!k.deepseek) throw new Error('нет ключа DeepSeek — открой Настройки');
       const r = await fetch('https://api.deepseek.com/v1/chat/completions', {
@@ -459,6 +418,7 @@ async function callModel(modelKey, messages){
       if(!r.ok) throw new Error(d.error?.message || 'DeepSeek: ошибка запроса');
       return d.choices[0].message.content;
     }
+
     case 'grok': {
       if(!k.grok) throw new Error('нет ключа Grok (xAI) — открой Настройки');
       const r = await fetch('https://api.x.ai/v1/chat/completions', {
@@ -470,6 +430,7 @@ async function callModel(modelKey, messages){
       if(!r.ok) throw new Error(d.error?.message || 'Grok: ошибка запроса');
       return d.choices[0].message.content;
     }
+
     default: throw new Error('неизвестная модель');
   }
 }
@@ -526,11 +487,10 @@ function saveHQUrl(){
 
 /* ---------- GitHub Deploy ---------- */
 const GH_REPO = 'bestdreambot/freex';
-const GH_PATH = 'index.html';
 const GH_BRANCH = 'main';
 
 function openGH(){
-  hqOpen = true;
+  hqOpen = true; // переиспользуем флаг, чтобы список чатов не подсвечивал активный
   document.getElementById('view').style.display='none';
   document.getElementById('composer').style.display='none';
   document.getElementById('hqView').classList.remove('active');
@@ -557,8 +517,9 @@ async function pushToGitHub(){
 
   document.getElementById('ghPushBtn').disabled = true;
   status.textContent = 'Отправляю...';
+  const ghPath = document.getElementById('ghFileSelect').value;
   try{
-    const apiUrl = `https://api.github.com/repos/${GH_REPO}/contents/${GH_PATH}`;
+    const apiUrl = `https://api.github.com/repos/${GH_REPO}/contents/${ghPath}`;
     const getRes = await fetch(apiUrl + `?ref=${GH_BRANCH}`, {
       headers:{ 'Authorization':'Bearer '+token, 'Accept':'application/vnd.github+json' }
     });
@@ -568,17 +529,19 @@ async function pushToGitHub(){
       const e = await getRes.json().catch(()=>({}));
       throw new Error('Не смог прочитать текущий файл: ' + (e.message || getRes.status));
     }
+
     const putRes = await fetch(apiUrl, {
       method:'PUT',
       headers:{ 'Authorization':'Bearer '+token, 'Accept':'application/vnd.github+json', 'Content-Type':'application/json' },
       body: JSON.stringify({
-        message: 'FreeX: обновление index.html через сайт, ' + new Date().toISOString(),
+        message: 'FreeX: обновление ' + ghPath + ' через сайт, ' + new Date().toISOString(),
         content: utf8ToBase64(content),
         sha, branch: GH_BRANCH
       })
     });
     const putData = await putRes.json();
     if(!putRes.ok) throw new Error(putData.message || 'GitHub отклонил запрос');
+
     status.textContent = 'Готово! Коммит: ' + (putData.commit?.sha?.slice(0,7) || '—') + '\nVercel задеплоит за 1-2 минуты.';
   }catch(err){
     status.textContent = 'Ошибка: ' + err.message;
@@ -599,8 +562,6 @@ function toggleSidebar(force){
 populateModelSelect();
 if(!activeId && chats.length) activeId = chats[0].id;
 renderAll();
-loadDraft();
-refreshSend();
 </script>
 </body>
 </html>
