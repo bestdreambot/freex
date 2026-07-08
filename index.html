@@ -190,6 +190,7 @@
       <div class="keyRow"><label>Groq</label><input id="key_groq" placeholder="gsk_..."><a class="link" href="https://console.groq.com/keys" target="_blank">Получить ключ →</a></div>
       <div class="keyRow"><label>Cerebras</label><input id="key_cerebras" placeholder="csk-..."><a class="link" href="https://cloud.cerebras.ai" target="_blank">Получить ключ →</a></div>
       <div class="keyRow"><label>Mistral</label><input id="key_mistral" placeholder="..."><a class="link" href="https://console.mistral.ai/api-keys" target="_blank">Получить ключ →</a></div>
+      <div class="keyRow"><label>OpenRouter (Grok free и др.)</label><input id="key_openrouter" placeholder="sk-or-..."><a class="link" href="https://openrouter.ai/keys" target="_blank">Получить ключ →</a></div>
       <button class="btn-primary" onclick="saveSettings()">💾 Сохранить ключи</button>
       <div class="info-box">Вводи только те ключи, что у тебя есть. Модель появится в списке, если для неё введён ключ. 🎯 Конференция опрашивает все включённые модели по очереди.</div>
     </div>
@@ -223,14 +224,15 @@ let viewOpen=false;
 
 /* ===== МОДЕЛИ ===== ключ появляется -> модель доступна */
 const ALL_MODELS=[
-  {id:'deepseek',label:'DeepSeek',provider:'deepseek',keyField:'key_deepseek'},
+  {id:'deepseek',label:'DeepSeek',provider:'deepseek',keyField:'key_deepseek',model:'deepseek-chat'},
   {id:'grok',label:'Grok (xAI)',provider:'grok',keyField:'key_grok',model:'grok-4.3'},
   {id:'gh_gpt4o',label:'GPT-4o (GitHub)',provider:'github',keyField:'key_github',model:'gpt-4o'},
   {id:'gh_r1',label:'DeepSeek-R1 (GitHub)',provider:'github',keyField:'key_github',model:'DeepSeek-R1'},
   {id:'gemini',label:'Gemini 2.5 Flash',provider:'gemini',keyField:'key_gemini',model:'gemini-2.5-flash'},
   {id:'groq',label:'Llama 3.3 70B (Groq)',provider:'groq',keyField:'key_groq',model:'llama-3.3-70b-versatile'},
   {id:'cerebras',label:'Llama 3.3 70B (Cerebras)',provider:'cerebras',keyField:'key_cerebras',model:'llama-3.3-70b'},
-  {id:'mistral',label:'Mistral Small',provider:'mistral',keyField:'key_mistral',model:'mistral-small-latest'}
+  {id:'mistral',label:'Mistral Small',provider:'mistral',keyField:'key_mistral',model:'mistral-small-latest'},
+  {id:'or_grok',label:'Grok (OpenRouter, free)',provider:'openrouter',keyField:'key_openrouter',model:'x-ai/grok-4-fast:free'}
 ];
 function availableModels(){return ALL_MODELS.filter(m=>keys[m.keyField]);}
 function modelLabel(id){return (ALL_MODELS.find(m=>m.id===id)||{}).label||id;}
@@ -399,34 +401,23 @@ async function sendMessage(){
   document.getElementById('sendBtn').disabled=false;
 }
 
-/* ===== MODEL CALLS ===== */
+/* ===== MODEL CALLS =====
+   Все запросы идут через собственный прокси /api/chat (решает CORS, работает для всех моделей).
+   Прокси живёт на Vercel как api/chat.js. */
 async function callModel(model,history,apiKey){
-  const p=model.provider;
-  if(p==='deepseek')return oaLike('https://api.deepseek.com/v1/chat/completions',apiKey,'deepseek-chat',history);
-  if(p==='grok')return oaLike('https://api.x.ai/v1/chat/completions',apiKey,model.model,history);
-  if(p==='github')return oaLike('https://models.inference.ai.azure.com/chat/completions?api-version=2024-08-01-preview',apiKey,model.model,history);
-  if(p==='groq')return oaLike('https://api.groq.com/openai/v1/chat/completions',apiKey,model.model,history);
-  if(p==='cerebras')return oaLike('https://api.cerebras.ai/v1/chat/completions',apiKey,model.model,history);
-  if(p==='mistral')return oaLike('https://api.mistral.ai/v1/chat/completions',apiKey,model.model,history);
-  if(p==='gemini')return geminiCall(model.model,apiKey,history);
-  throw new Error('неизвестный провайдер');
-}
-async function oaLike(url,apiKey,model,history){
-  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},body:JSON.stringify({model,messages:history,temperature:0.7,max_tokens:2000})});
-  const d=await r.json();
-  if(!r.ok)throw new Error(d.error?.message||('ошибка '+r.status));
-  return d.choices[0].message.content;
-}
-async function geminiCall(model,apiKey,history){
-  const contents=history.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
-  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents})});
-  const d=await r.json();
-  if(!r.ok)throw new Error(d.error?.message||('Gemini ошибка '+r.status));
-  return d.candidates[0].content.parts[0].text;
+  const r=await fetch('/api/chat',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({provider:model.provider,model:model.model||'',messages:history,apiKey})
+  });
+  let d;
+  try{ d=await r.json(); }catch(e){ throw new Error('прокси не ответил (залей api/chat.js на GitHub)'); }
+  if(!r.ok)throw new Error(d.error||('ошибка '+r.status));
+  return d.content;
 }
 
 /* ===== SETTINGS ===== */
-const KEY_FIELDS=['key_deepseek','key_grok','key_github','key_gemini','key_groq','key_cerebras','key_mistral'];
+const KEY_FIELDS=['key_deepseek','key_grok','key_github','key_gemini','key_groq','key_cerebras','key_mistral','key_openrouter'];
 function openSettings(){KEY_FIELDS.forEach(k=>{const el=document.getElementById(k);if(el)el.value=keys[k]||'';});document.getElementById('settingsModal').classList.add('open');}
 function closeSettings(){document.getElementById('settingsModal').classList.remove('open');}
 function saveSettings(){KEY_FIELDS.forEach(k=>{const el=document.getElementById(k);if(el)keys[k]=el.value.trim();});save(LS.keys,keys);populateModelSelect();closeSettings();renderMessages();}
