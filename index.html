@@ -132,7 +132,6 @@
   <div class="sb-newbtn" onclick="newChat()">+ Новый чат</div>
   <div class="sb-item" onclick="openHQ()">🗂 HQ (Notion)</div>
   <div class="sb-item" onclick="openGH()">🚀 Деплой на GitHub</div>
-  <div class="sb-item" onclick="clearChat()">🧹 Очистить текущий чат</div>
   <div class="sb-label">Папки <span class="add" onclick="newFolder()">＋</span></div>
   <div class="sb-section" id="chatList"></div>
   <div class="sb-footer"><button onclick="openSettings()">⚙ Настройки</button></div>
@@ -173,7 +172,10 @@
       </select>
       <input id="ghPath" value="index.html" style="display:none;" placeholder="напр. api/models.js">
       <textarea id="ghContent" placeholder="Вставь содержимое файла..."></textarea>
-      <button id="ghPushBtn" onclick="pushToGitHub()">⬆ Отправить в GitHub</button>
+      <div style="display:flex;gap:8px;">
+        <button onclick="document.getElementById('ghContent').value='';document.getElementById('ghStatus').textContent='';" style="flex:none;padding:12px 16px;border-radius:10px;border:1px solid var(--line);background:var(--bg-3);color:var(--text);font-size:14px;cursor:pointer;">🗑 Очистить поле</button>
+        <button id="ghPushBtn" onclick="pushToGitHub()" style="flex:1;">⬆ Отправить в GitHub</button>
+      </div>
       <div id="ghStatus"></div>
     </div>
   </div>
@@ -345,7 +347,6 @@ function copyMessage(idx){
 function fallback(t,cb){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');}catch(e){}a.remove();cb&&cb();}
 
 function toggleConf(){let chat=getActiveChat();if(!chat){newChat();chat=getActiveChat();}chat.conf=!chat.conf;save(LS.chats,chats);renderMessages();}
-function clearChat(){const chat=getActiveChat();if(!chat)return;if(!confirm('Очистить все сообщения в этом чате?'))return;chat.messages=[];save(LS.chats,chats);renderMessages();}
 function renderAll(){renderSidebarList();renderMessages();}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
@@ -437,9 +438,11 @@ function showView(which){
   document.getElementById('view').style.display='none';document.getElementById('composer').style.display='none';
   document.getElementById('hqView').classList.toggle('active',which==='hq');
   document.getElementById('ghView').classList.toggle('active',which==='gh');
+  document.getElementById('modelSelect').style.display='none';
+  document.getElementById('confBtn').style.display='none';
   toggleSidebar(false);renderSidebarList();
 }
-function closeViews(){viewOpen=false;document.getElementById('view').style.display='flex';document.getElementById('composer').style.display='flex';document.getElementById('hqView').classList.remove('active');document.getElementById('ghView').classList.remove('active');renderMessages();}
+function closeViews(){viewOpen=false;document.getElementById('view').style.display='flex';document.getElementById('composer').style.display='flex';document.getElementById('hqView').classList.remove('active');document.getElementById('ghView').classList.remove('active');document.getElementById('modelSelect').style.display='';document.getElementById('confBtn').style.display='';renderMessages();}
 function openHQ(){showView('hq');document.getElementById('chatTitle').textContent='HQ (Notion)';
   const url=localStorage.getItem(LS.hqUrl);const fr=document.getElementById('hqFrame'),em=document.getElementById('hqEmpty');
   if(url){fr.src=url;fr.style.display='block';em.style.display='none';}else{fr.style.display='none';em.style.display='block';}
