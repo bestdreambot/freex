@@ -10,8 +10,23 @@ export default async function handler(req, res) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const { provider, model, messages, apiKey } = body || {};
+    const { provider, model, messages, apiKey, account } = body || {};
     if (!provider || !apiKey) return res.status(400).json({ error: 'Нет provider или apiKey' });
+
+    /* ---------- Cloudflare Workers AI ---------- */
+    if (provider === 'cloudflare') {
+      if (!account) return res.status(400).json({ error: 'Cloudflare: нужен Account ID (в Настройках)' });
+      const cfr = await fetch('https://api.cloudflare.com/client/v4/accounts/' + account + '/ai/run/' + model, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+        body: JSON.stringify({ messages, max_tokens: 1024 })
+      });
+      const cfd = await cfr.json();
+      if (!cfr.ok) return res.status(cfr.status).json({ error: cfd.errors?.[0]?.message || ('Cloudflare ошибка ' + cfr.status) });
+      const cftext = cfd?.result?.response || '';
+      if (!cftext.trim()) return res.status(502).json({ error: 'Cloudflare вернул пустой ответ' });
+      return res.status(200).json({ content: cftext });
+    }
 
     /* ---------- Gemini: свой формат + безопасный парсер (фикс B) ---------- */
     if (provider === 'gemini') {
@@ -30,39 +45,31 @@ export default async function handler(req, res) {
       const candidate = gd?.candidates?.[0];
       if (!candidate) {
         const blocked = gd?.promptFeedback?.blockReason;
-        return res.status(502).json({ error: 'Gemini: нет кандидатов' + (blocked ? ' (блок: ' + blocked + ')' : '') });
+        return res.status(502).json({ error: 'Gemini: нет ответа' + (blocked ? ' (блок: ' + blocked + ')' : '') });
       }
-      const parts = candidate?.content?.parts;
-      const text = Array.isArray(parts) ? parts.map(p => (typeof p?.text === 'string' ? p.text : '')).join('').trim() : '';
-      if (text) return res.status(200).json({ content: text });
-      // текста нет: если причина не STOP — это блок; если STOP без текста — редкий пустой ответ
-      const reason = candidate?.finishReason || 'пустой ответ';
-      if (reason === 'STOP') return res.status(200).json({ content: '(Gemini вернул пустой ответ, попробуй переформулировать)' });
-      return res.status(502).json({ error: 'Gemini заблокировал ответ (' + reason + ')' });
+      const gparts = candidate?.content?.parts;
+      const gtext = Array.isArray(gparts) ? gparts.map(p => (typeof p?.text === 'string' ? p.text : '')).join('').trim() : '';
+      if (gtext) return res.status(200).json({ content: gtext });
+      const greason = candidate?.finishReason;
+      if (greason === 'SAFETY' || greason === 'RECITATION' || greason === 'BLOCKLIST')
+        return res.status(502).json({ error: 'Gemini заблокировал ответ (' + greason + ')' });
+      return res.status(502).json({ error: 'Gemini вернул пустой ответ, попробуй переформулировать' });
     }
 
     /* ---------- OpenAI-совместимые провайдеры ---------- */
     const endpoints = {
-      deepseek:   'https://api.deepseek.com/v1/chat/completions',
-      grok:       'https://api.x.ai/v1/chat/completions',
-      github:     'https://models.inference.ai.azure.com/chat/completions',
-      groq:       'https://api.groq.com/openai/v1/chat/completions',
-      cerebras:   'https://api.cerebras.ai/v1/chat/completions',
-      mistral:    'https://api.mistral.ai/v1/chat/completions',
-      openrouter: 'https://openrouter.ai/api/v1/chat/completions'
+      deepseek: 'https://api.deepseek.com/v1/chat/completions',
+      github:   'https://models.inference.ai.azure.com/chat/completions',
+      groq:     'https://api.groq.com/openai/v1/chat/completions'
     };
     const url = endpoints[provider];
-    if (!url) return res.status(400).json({ error: 'Неизвестный провайдер: ' + provider });
+    if (!url) return res.status(400).json({ error: 'Неизвестный или платный провайдер: ' + provider });
 
     const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey };
-    if (provider === 'openrouter') {
-      headers['HTTP-Referer'] = 'https://freex-xi.vercel.app';
-      headers['X-Title'] = 'FreeX';
-    }
 
-    // R1 и reasoning-модели требуют больше токенов (фикс A)
+    // R1 нужен больший лимит; Groq — явный max_tokens
     const isReasoning = /r1|reason/i.test(model || '');
-    const maxTokens = isReasoning ? 4000 : (provider === 'github' ? 1500 : 2000);
+    const maxTokens = isReasoning ? 4000 : (provider === 'github' ? 1500 : 1024);
 
     const r = await fetch(url, {
       method: 'POST', headers,
@@ -70,20 +77,18 @@ export default async function handler(req, res) {
     });
     const d = await r.json();
     if (!r.ok) {
-      // Grok 403: понятное сообщение (фикс C)
-      if (provider === 'grok' && r.status === 403) {
-        return res.status(403).json({ error: 'Grok (xAI): доступ закрыт — нужен платный баланс на console.x.ai. Бесплатно Grok доступен через OpenRouter.' });
-      }
       return res.status(r.status).json({ error: d.error?.message || ('ошибка ' + r.status) });
     }
 
-    /* Универсальный парсер ответа (фикс A: content -> reasoning_content -> <think>-разметка) */
+    /* Универсальный парсер ответа */
     const msg = d?.choices?.[0]?.message || {};
     let text = (typeof msg.content === 'string' ? msg.content : '') || '';
     if (!text.trim() && typeof msg.reasoning_content === 'string') text = msg.reasoning_content;
-    // Если ответ пришёл с <think>...</think> — показываем только финальную часть
-    const thinkMatch = text.match(/<think>[\s\S]*?<\/think>([\s\S]*)/);
-    if (thinkMatch && thinkMatch[1].trim()) text = thinkMatch[1].trim();
+    // R1: убрать рассуждения — всё до закрывающего </think> включительно (даже если открывающего <think> нет)
+    if (text.includes('</think>')) {
+      const after = text.split('</think>').pop();
+      if (after && after.trim()) text = after;
+    }
     text = (text || '').trim();
 
     if (!text) {
