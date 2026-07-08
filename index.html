@@ -131,6 +131,7 @@
   <div class="sb-newbtn" onclick="newChat()">+ Новый чат</div>
   <div class="sb-item" onclick="openHQ()">🗂 HQ (Notion)</div>
   <div class="sb-item" onclick="openGH()">🚀 Деплой на GitHub</div>
+  <div class="sb-item" onclick="clearChat()">🧹 Очистить текущий чат</div>
   <div class="sb-label">Папки <span class="add" onclick="newFolder()">＋</span></div>
   <div class="sb-section" id="chatList"></div>
   <div class="sb-footer"><button onclick="openSettings()">⚙ Настройки</button></div>
@@ -230,9 +231,9 @@ const ALL_MODELS=[
   {id:'gh_r1',label:'DeepSeek-R1 (GitHub)',provider:'github',keyField:'key_github',model:'DeepSeek-R1'},
   {id:'gemini',label:'Gemini 2.5 Flash',provider:'gemini',keyField:'key_gemini',model:'gemini-2.5-flash'},
   {id:'groq',label:'Llama 3.3 70B (Groq)',provider:'groq',keyField:'key_groq',model:'llama-3.3-70b-versatile'},
-  {id:'cerebras',label:'Llama 3.3 70B (Cerebras)',provider:'cerebras',keyField:'key_cerebras',model:'llama-3.3-70b'},
+  {id:'cerebras',label:'Llama 3.3 70B (Cerebras)',provider:'cerebras',keyField:'key_cerebras',model:'llama3.3-70b'},
   {id:'mistral',label:'Mistral Small',provider:'mistral',keyField:'key_mistral',model:'mistral-small-latest'},
-  {id:'or_grok',label:'Grok (OpenRouter, free)',provider:'openrouter',keyField:'key_openrouter',model:'x-ai/grok-4-fast:free'}
+  {id:'or_grok',label:'Grok (OpenRouter)',provider:'openrouter',keyField:'key_openrouter',model:'x-ai/grok-4.3'}
 ];
 function availableModels(){return ALL_MODELS.filter(m=>keys[m.keyField]);}
 function modelLabel(id){return (ALL_MODELS.find(m=>m.id===id)||{}).label||id;}
@@ -340,6 +341,7 @@ function copyMessage(idx){
 function fallback(t,cb){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');}catch(e){}a.remove();cb&&cb();}
 
 function toggleConf(){let chat=getActiveChat();if(!chat){newChat();chat=getActiveChat();}chat.conf=!chat.conf;save(LS.chats,chats);renderMessages();}
+function clearChat(){const chat=getActiveChat();if(!chat)return;if(!confirm('Очистить все сообщения в этом чате?'))return;chat.messages=[];save(LS.chats,chats);renderMessages();}
 function renderAll(){renderSidebarList();renderMessages();}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
