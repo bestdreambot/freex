@@ -91,6 +91,7 @@
   #ghBox{display:flex;flex-direction:column;gap:10px;height:100%;}
   .ghHead{font-size:13px;color:var(--text-dim);line-height:1.4;}
   #ghPath{background:var(--bg-3);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:13.5px;font-family:monospace;}
+  #ghPathSelect{background:var(--bg-3);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:13.5px;}
   #ghContent{flex:1;min-height:200px;resize:vertical;background:var(--bg-2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-family:monospace;font-size:12px;}
   #ghPushBtn{padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:14.5px;cursor:pointer;}
   #ghPushBtn:disabled{opacity:.5;}
@@ -161,8 +162,16 @@
   <div id="ghView">
     <button class="backBtn" onclick="closeViews()">← Назад к чату</button>
     <div id="ghBox">
-      <div class="ghHead">Умный деплой. Укажи путь файла в репозитории (например <b>index.html</b>, <b>start.md</b>, <b>api/chat.js</b>) — если файла нет, FreeX создаст его, если есть — заменит. Вставь содержимое и нажми «Отправить».</div>
-      <input id="ghPath" value="index.html" placeholder="путь к файлу, напр. start.md">
+      <div class="ghHead">Умный деплой. Выбери файл из списка (или «другой файл» и впиши путь). Нет файла — FreeX создаст, есть — заменит. Вставь содержимое и нажми «Отправить».</div>
+      <select id="ghPathSelect" onchange="onGhPathChange()">
+        <option value="index.html">index.html — сам сайт</option>
+        <option value="api/chat.js">api/chat.js — прокси моделей</option>
+        <option value="start.md">start.md — документация</option>
+        <option value="vercel.json">vercel.json — настройки Vercel</option>
+        <option value="notion.md">notion.md — правила агентов</option>
+        <option value="__custom__">✎ другой файл (вписать путь)</option>
+      </select>
+      <input id="ghPath" value="index.html" style="display:none;" placeholder="напр. api/models.js">
       <textarea id="ghContent" placeholder="Вставь содержимое файла..."></textarea>
       <button id="ghPushBtn" onclick="pushToGitHub()">⬆ Отправить в GitHub</button>
       <div id="ghStatus"></div>
@@ -185,15 +194,13 @@
     </div>
     <div class="tab-content active" id="tabKeys">
       <div class="keyRow"><label>DeepSeek</label><input id="key_deepseek" placeholder="sk-..."><a class="link" href="https://platform.deepseek.com/api_keys" target="_blank">Получить ключ →</a></div>
-      <div class="keyRow"><label>Grok (xAI)</label><input id="key_grok" placeholder="xai-..."><a class="link" href="https://console.x.ai" target="_blank">Получить ключ →</a></div>
       <div class="keyRow"><label>GitHub Token (для GPT-4o, DeepSeek-R1 и деплоя)</label><input id="key_github" placeholder="ghp_..."><a class="link" href="https://github.com/settings/tokens" target="_blank">Получить токен →</a></div>
       <div class="keyRow"><label>Google Gemini</label><input id="key_gemini" placeholder="AIza..."><a class="link" href="https://aistudio.google.com/apikey" target="_blank">Получить ключ →</a></div>
       <div class="keyRow"><label>Groq</label><input id="key_groq" placeholder="gsk_..."><a class="link" href="https://console.groq.com/keys" target="_blank">Получить ключ →</a></div>
-      <div class="keyRow"><label>Cerebras</label><input id="key_cerebras" placeholder="csk-..."><a class="link" href="https://cloud.cerebras.ai" target="_blank">Получить ключ →</a></div>
-      <div class="keyRow"><label>Mistral</label><input id="key_mistral" placeholder="..."><a class="link" href="https://console.mistral.ai/api-keys" target="_blank">Получить ключ →</a></div>
-      <div class="keyRow"><label>OpenRouter (Grok free и др.)</label><input id="key_openrouter" placeholder="sk-or-..."><a class="link" href="https://openrouter.ai/keys" target="_blank">Получить ключ →</a></div>
+      <div class="keyRow"><label>Cloudflare — API Token</label><input id="key_cloudflare" placeholder="..."><a class="link" href="https://dash.cloudflare.com/profile/api-tokens" target="_blank">Получить токен →</a></div>
+      <div class="keyRow"><label>Cloudflare — Account ID</label><input id="key_cf_account" placeholder="32-символьный ID"><a class="link" href="https://dash.cloudflare.com" target="_blank">Найти в дашборде →</a></div>
       <button class="btn-primary" onclick="saveSettings()">💾 Сохранить ключи</button>
-      <div class="info-box">Вводи только те ключи, что у тебя есть. Модель появится в списке, если для неё введён ключ. 🎯 Конференция опрашивает все включённые модели по очереди.</div>
+      <div class="info-box">Все модели здесь — бесплатные. Вводи только те ключи, что у тебя есть; модель появится в списке автоматически. 🎯 Конференция опрашивает все включённые модели по очереди.</div>
     </div>
     <div class="tab-content" id="tabView">
       <div class="setting-group"><label>Тема</label><div class="opt-row">
@@ -226,14 +233,11 @@ let viewOpen=false;
 /* ===== МОДЕЛИ ===== ключ появляется -> модель доступна */
 const ALL_MODELS=[
   {id:'deepseek',label:'DeepSeek',provider:'deepseek',keyField:'key_deepseek',model:'deepseek-chat'},
-  {id:'grok',label:'Grok (xAI)',provider:'grok',keyField:'key_grok',model:'grok-4.3'},
   {id:'gh_gpt4o',label:'GPT-4o (GitHub)',provider:'github',keyField:'key_github',model:'gpt-4o'},
   {id:'gh_r1',label:'DeepSeek-R1 (GitHub)',provider:'github',keyField:'key_github',model:'DeepSeek-R1'},
   {id:'gemini',label:'Gemini 2.5 Flash',provider:'gemini',keyField:'key_gemini',model:'gemini-2.5-flash'},
   {id:'groq',label:'Llama 3.3 70B (Groq)',provider:'groq',keyField:'key_groq',model:'llama-3.3-70b-versatile'},
-  {id:'cerebras',label:'Llama 3.3 70B (Cerebras)',provider:'cerebras',keyField:'key_cerebras',model:'llama3.3-70b'},
-  {id:'mistral',label:'Mistral Small',provider:'mistral',keyField:'key_mistral',model:'mistral-small-latest'},
-  {id:'or_grok',label:'Grok (OpenRouter)',provider:'openrouter',keyField:'key_openrouter',model:'x-ai/grok-4.3'}
+  {id:'cf_llama',label:'Llama 3.3 (Cloudflare)',provider:'cloudflare',keyField:'key_cloudflare',model:'@cf/meta/llama-3.3-70b-instruct-fp8-fast'}
 ];
 function availableModels(){return ALL_MODELS.filter(m=>keys[m.keyField]);}
 function modelLabel(id){return (ALL_MODELS.find(m=>m.id===id)||{}).label||id;}
@@ -407,10 +411,12 @@ async function sendMessage(){
    Все запросы идут через собственный прокси /api/chat (решает CORS, работает для всех моделей).
    Прокси живёт на Vercel как api/chat.js. */
 async function callModel(model,history,apiKey){
+  const extra={};
+  if(model.provider==='cloudflare')extra.account=keys.key_cf_account||'';
   const r=await fetch('/api/chat',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({provider:model.provider,model:model.model||'',messages:history,apiKey})
+    body:JSON.stringify({provider:model.provider,model:model.model||'',messages:history,apiKey,...extra})
   });
   let d;
   try{ d=await r.json(); }catch(e){ throw new Error('прокси не ответил (залей api/chat.js на GitHub)'); }
@@ -419,7 +425,7 @@ async function callModel(model,history,apiKey){
 }
 
 /* ===== SETTINGS ===== */
-const KEY_FIELDS=['key_deepseek','key_grok','key_github','key_gemini','key_groq','key_cerebras','key_mistral','key_openrouter'];
+const KEY_FIELDS=['key_deepseek','key_github','key_gemini','key_groq','key_cloudflare','key_cf_account'];
 function openSettings(){KEY_FIELDS.forEach(k=>{const el=document.getElementById(k);if(el)el.value=keys[k]||'';});document.getElementById('settingsModal').classList.add('open');}
 function closeSettings(){document.getElementById('settingsModal').classList.remove('open');}
 function saveSettings(){KEY_FIELDS.forEach(k=>{const el=document.getElementById(k);if(el)keys[k]=el.value.trim();});save(LS.keys,keys);populateModelSelect();closeSettings();renderMessages();}
@@ -440,6 +446,11 @@ function openHQ(){showView('hq');document.getElementById('chatTitle').textConten
 }
 function saveHQUrl(){const v=document.getElementById('hqUrlInput').value.trim();if(!v)return;localStorage.setItem(LS.hqUrl,v);openHQ();}
 function openGH(){showView('gh');document.getElementById('chatTitle').textContent='Деплой на GitHub';}
+function onGhPathChange(){
+  const sel=document.getElementById('ghPathSelect');const inp=document.getElementById('ghPath');
+  if(sel.value==='__custom__'){inp.style.display='block';inp.value='';inp.focus();}
+  else{inp.style.display='none';inp.value=sel.value;}
+}
 
 /* ===== GITHUB DEPLOY (любой файл) ===== */
 const GH_REPO='bestdreambot/freex',GH_BRANCH='main';
