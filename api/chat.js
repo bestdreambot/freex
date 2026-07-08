@@ -34,11 +34,11 @@ export default async function handler(req, res) {
       }
       const parts = candidate?.content?.parts;
       const text = Array.isArray(parts) ? parts.map(p => (typeof p?.text === 'string' ? p.text : '')).join('').trim() : '';
-      if (!text) {
-        const reason = candidate?.finishReason || 'пустой ответ';
-        return res.status(502).json({ error: 'Gemini не вернул текст (finishReason: ' + reason + ')' });
-      }
-      return res.status(200).json({ content: text });
+      if (text) return res.status(200).json({ content: text });
+      // текста нет: если причина не STOP — это блок; если STOP без текста — редкий пустой ответ
+      const reason = candidate?.finishReason || 'пустой ответ';
+      if (reason === 'STOP') return res.status(200).json({ content: '(Gemini вернул пустой ответ, попробуй переформулировать)' });
+      return res.status(502).json({ error: 'Gemini заблокировал ответ (' + reason + ')' });
     }
 
     /* ---------- OpenAI-совместимые провайдеры ---------- */
