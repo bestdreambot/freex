@@ -190,6 +190,7 @@
       <div class="keyRow"><label>Groq</label><input id="key_groq" placeholder="gsk_..."><a class="link" href="https://console.groq.com/keys" target="_blank">Получить ключ →</a></div>
       <div class="keyRow"><label>Cerebras</label><input id="key_cerebras" placeholder="csk-..."><a class="link" href="https://cloud.cerebras.ai" target="_blank">Получить ключ →</a></div>
       <div class="keyRow"><label>Mistral</label><input id="key_mistral" placeholder="..."><a class="link" href="https://console.mistral.ai/api-keys" target="_blank">Получить ключ →</a></div>
+      <div class="keyRow"><label>OpenRouter (Grok free и др.)</label><input id="key_openrouter" placeholder="sk-or-..."><a class="link" href="https://openrouter.ai/keys" target="_blank">Получить ключ →</a></div>
       <button class="btn-primary" onclick="saveSettings()">💾 Сохранить ключи</button>
       <div class="info-box">Вводи только те ключи, что у тебя есть. Модель появится в списке, если для неё введён ключ. 🎯 Конференция опрашивает все включённые модели по очереди.</div>
     </div>
@@ -230,7 +231,8 @@ const ALL_MODELS=[
   {id:'gemini',label:'Gemini 2.5 Flash',provider:'gemini',keyField:'key_gemini',model:'gemini-2.5-flash'},
   {id:'groq',label:'Llama 3.3 70B (Groq)',provider:'groq',keyField:'key_groq',model:'llama-3.3-70b-versatile'},
   {id:'cerebras',label:'Llama 3.3 70B (Cerebras)',provider:'cerebras',keyField:'key_cerebras',model:'llama-3.3-70b'},
-  {id:'mistral',label:'Mistral Small',provider:'mistral',keyField:'key_mistral',model:'mistral-small-latest'}
+  {id:'mistral',label:'Mistral Small',provider:'mistral',keyField:'key_mistral',model:'mistral-small-latest'},
+  {id:'or_grok',label:'Grok (OpenRouter, free)',provider:'openrouter',keyField:'key_openrouter',model:'x-ai/grok-4-fast:free'}
 ];
 function availableModels(){return ALL_MODELS.filter(m=>keys[m.keyField]);}
 function modelLabel(id){return (ALL_MODELS.find(m=>m.id===id)||{}).label||id;}
@@ -415,7 +417,7 @@ async function callModel(model,history,apiKey){
 }
 
 /* ===== SETTINGS ===== */
-const KEY_FIELDS=['key_deepseek','key_grok','key_github','key_gemini','key_groq','key_cerebras','key_mistral'];
+const KEY_FIELDS=['key_deepseek','key_grok','key_github','key_gemini','key_groq','key_cerebras','key_mistral','key_openrouter'];
 function openSettings(){KEY_FIELDS.forEach(k=>{const el=document.getElementById(k);if(el)el.value=keys[k]||'';});document.getElementById('settingsModal').classList.add('open');}
 function closeSettings(){document.getElementById('settingsModal').classList.remove('open');}
 function saveSettings(){KEY_FIELDS.forEach(k=>{const el=document.getElementById(k);if(el)keys[k]=el.value.trim();});save(LS.keys,keys);populateModelSelect();closeSettings();renderMessages();}
