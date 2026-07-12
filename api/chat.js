@@ -10,8 +10,17 @@ export default async function handler(req, res) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const { provider, model, messages, apiKey, account } = body || {};
-    if (!provider || !apiKey) return res.status(400).json({ error: 'Нет provider или apiKey' });
+    const { provider, model, messages, account } = body || {};
+    let { apiKey } = body || {};
+    if (!provider) return res.status(400).json({ error: 'Нет provider' });
+
+    if (provider === 'deepseek') {
+      // Свой ключ пользователя приоритетнее серверного; иначе — переменная окружения.
+      apiKey = apiKey || process.env.DEEPSEEK_API_KEY;
+      if (!apiKey) return res.status(400).json({ error: 'DeepSeek: нужен API-ключ — введите свой в Настройках или задайте DEEPSEEK_API_KEY на сервере' });
+    } else if (!apiKey) {
+      return res.status(400).json({ error: 'Нет provider или apiKey' });
+    }
 
     /* ---------- Cloudflare Workers AI ---------- */
     if (provider === 'cloudflare') {
@@ -56,9 +65,35 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: 'Gemini вернул пустой ответ, попробуй переформулировать' });
     }
 
+    /* ---------- DeepSeek: content и reasoning_content — раздельные поля API, без <think>-тегов ---------- */
+    if (provider === 'deepseek') {
+      const dsHeaders = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey };
+      const isReasoning = /reason/i.test(model || '');
+      const dsMaxTokens = isReasoning ? 4000 : 1024;
+
+      const dr = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST', headers: dsHeaders,
+        body: JSON.stringify({ model, messages, temperature: 0.7, max_tokens: dsMaxTokens })
+      });
+      const dd = await dr.json();
+      if (!dr.ok) return res.status(dr.status).json({ error: dd.error?.message || ('DeepSeek ошибка ' + dr.status) });
+
+      const dmsg = dd?.choices?.[0]?.message || {};
+      const dtext = (typeof dmsg.content === 'string' ? dmsg.content : '').trim();
+      const dreasoning = (typeof dmsg.reasoning_content === 'string' ? dmsg.reasoning_content : '').trim();
+
+      if (dtext || dreasoning) {
+        const payload = { content: dtext };
+        if (dreasoning) payload.reasoning = dreasoning;
+        return res.status(200).json(payload);
+      }
+
+      const dfr = dd?.choices?.[0]?.finish_reason || 'unknown';
+      return res.status(502).json({ error: 'DeepSeek вернул пустой ответ (finish_reason: ' + dfr + '). Попробуй ещё раз или короче вопрос.' });
+    }
+
     /* ---------- OpenAI-совместимые провайдеры ---------- */
     const endpoints = {
-      deepseek: 'https://api.deepseek.com/v1/chat/completions',
       github:   'https://models.inference.ai.azure.com/chat/completions',
       groq:     'https://api.groq.com/openai/v1/chat/completions'
     };
