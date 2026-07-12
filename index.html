@@ -14,6 +14,13 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div id="splash" style="position:fixed;inset:0;z-index:9999;background:linear-gradient(160deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">
+  <div style="font-size:72px;margin-bottom:10px;">🔮</div>
+  <div style="font-size:42px;font-weight:800;color:#fff;letter-spacing:1px;">FreeX <span style="color:#10a37f;">8.0</span></div>
+  <div style="font-size:16px;color:#b0b0c0;margin:14px 0 36px;max-width:320px;line-height:1.5;">Твоя личная среда ИИ и заметок.<br>Несколько моделей. Одна конференция. Всё с телефона.</div>
+  <button onclick="document.getElementById('splash').style.display='none'" style="background:#10a37f;color:#fff;border:none;border-radius:16px;padding:16px 56px;font-size:19px;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(16,163,127,0.4);">Старт →</button>
+  <div style="position:absolute;bottom:24px;font-size:12px;color:#6a6a84;">версия 8.0 · 12.07.2026</div>
+</div>
 <div id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
 <div id="sidebar">
   <div class="sb-head">FreeX v6.2</div>
