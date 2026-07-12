@@ -41,7 +41,7 @@
     </div>
     <div id="noteEditor">
       <input id="noteTitle" placeholder="Название заметки">
-      <textarea id="noteContent" placeholder="Пиши здесь. Используй [[Название заметки]] для ссылок.&#10;&#10;AI может создавать заметки через теги:&#10;<note title="Название">Содержимое</note>"></textarea>
+      <textarea id="noteContent" placeholder="Пиши здесь. Используй [[Название заметки]] для ссылок.&#10;&#10;AI может создавать заметки через теги:&#10;<note title=&quot;Название&quot;>Содержимое</note>"></textarea>
       <div class="btn-row"><button class="btn sec" onclick="closeEditor()">← Назад</button><button class="btn" onclick="saveNote()">💾 Сохранить</button></div>
     </div>
   </div>
@@ -64,6 +64,7 @@
         <option value="start.md">start.md — документация</option>
         <option value="vercel.json">vercel.json — настройки Vercel</option>
         <option value="notion.md">notion.md — правила агентов</option>
+        <option value="agents/">agents/ — впиши имя файла после (напр. agents/grok.md)</option>
         <option value="__custom__">✎ другой файл (вписать путь)</option>
       </select>
       <input id="ghPath" value="index.html" style="display:none;" placeholder="напр. api/models.js">
@@ -123,7 +124,7 @@
           <button class="opt-btn" id="aiMemOff" onclick="setAiMemory(false)">❌ Выключена</button>
           <button class="opt-btn" id="aiMemOn" onclick="setAiMemory(true)">✅ Включена</button>
         </div>
-        <div class="info-box">Когда включена, модель может создавать и обновлять заметки через теги <code><note title="...">...</note></code>. Это позволяет AI запоминать факты между чатами.</div>
+        <div class="info-box">Когда включена, модель может создавать и обновлять заметки через теги <code>&lt;note title="..."&gt;...&lt;/note&gt;</code>. Это позволяет AI запоминать факты между чатами.</div>
       </div>
       <div class="setting-group">
         <button class="btn-secondary" onclick="clearAllNotes()" style="color:var(--danger);border-color:var(--danger);">🗑 Удалить все заметки</button>
@@ -149,10 +150,7 @@ let db;
 try{
   db = new Dexie('FreeXDB');
   db.version(1).stores({notes: '++id, title, updatedAt, *tags', chats: '++id, title, updatedAt', messages: '++id, chatId, role, model, content, createdAt'});
-}catch(e){
-  console.error('Dexie failed:', e);
-  db = {notes:{toArray:async()=>[],filter:()=>({toArray:async()=>[],first:async()=>null}),get:async()=>null,add:async()=>{},update:async()=>{},clear:async()=>{}},orderBy:()=>({reverse:()=>({toArray:async()=>[]})})};
-}
+}catch(e){ console.error('Dexie init failed:',e); db=null; }
 
 const ALL_MODELS=[
   {id:'deepseek',label:'DeepSeek',provider:'deepseek',keyField:'key_deepseek',model:'deepseek-chat'},
@@ -267,8 +265,6 @@ function renderSidebarList(){
   list.innerHTML=html||'<div class="sb-label">Пока пусто</div>';
 }
 
-const viewEl=document.getElementById('view');
-
 function renderMessages(){
   const chat=getActiveChat();const box=document.getElementById('messages');
   document.getElementById('chatTitle').textContent=chat?(chat.conf?'🎯 Конференция':chat.title):'FreeX';
@@ -285,7 +281,7 @@ function renderMessages(){
     const actions=!isUser?'<div class="msg-actions"><button onclick="copyMessage('+idx+')" id="cp_'+idx+'">📋 Копировать</button></div>':'';
     return '<div class="msg-wrapper '+(isUser?'user':'ai')+'"><div class="avatar">'+(isUser?'👤':'🔮')+'</div><div class="msg-content">'+label+'<div class="msg-bubble">'+escapeHtml(m.text)+'</div>'+actions+'</div></div>';
   }).join('');
-  if(viewEl)viewEl.scrollTop=viewEl.scrollHeight;
+  viewEl.scrollTop=viewEl.scrollHeight;
 }
 function copyMessage(idx){
   const chat=getActiveChat();if(!chat)return;const msg=chat.messages[idx];if(!msg)return;
@@ -297,9 +293,11 @@ function fallback(t,cb){const a=document.createElement('textarea');a.value=t;doc
 
 function toggleConf(){let chat=getActiveChat();if(!chat){newChat();chat=getActiveChat();}chat.conf=!chat.conf;save(LS.chats,chats);renderMessages();}
 function renderAll(){renderSidebarList();renderMessages();}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&','<':'<','>':'>','"':'"',"'":'&#39;'}[c]));}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
-function autoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';if(typeof refreshSend==='function')refreshSend();}
+const viewEl=document.getElementById('view');
+
+function autoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';refreshSend();}
 function onKeyDown(e){
   const mob=/iPhone|iPad|iPod|Android/.test(navigator.userAgent);
   if(e.key==='Enter'){
@@ -450,6 +448,7 @@ async function callModel(model,history,apiKey){
   return d.content;
 }
 
+// Переключение главных вкладок Чат / Заметки (переименовано из switchTab во избежание конфликта)
 function switchMainTab(tab){
   currentTab=tab;localStorage.setItem(LS.tab,tab);
   document.getElementById('messages').style.display=tab==='chat'?'flex':'none';
@@ -501,6 +500,8 @@ function openSettings(){
 }
 function closeSettings(){document.getElementById('settingsModal').classList.remove('open');}
 function saveSettings(){KEY_FIELDS.forEach(k=>{const el=document.getElementById(k);if(el)keys[k]=el.value.trim();});save(LS.keys,keys);populateModelSelect();closeSettings();renderMessages();}
+
+// Переключение вкладок в окне настроек (переименовано из switchTab)
 function switchSettingsTab(id){
   document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
@@ -527,8 +528,11 @@ function openGH(){showView('gh');document.getElementById('chatTitle').textConten
 function onGhPathChange(){
   const sel=document.getElementById('ghPathSelect');const inp=document.getElementById('ghPath');
   if(sel.value==='__custom__'){inp.style.display='block';inp.value='';inp.focus();}
+  else if(sel.value==='agents/'){inp.style.display='block';inp.value='agents/';inp.focus();inp.setSelectionRange(7,7);}
   else{inp.style.display='none';inp.value=sel.value;}
-  const GH_REPO='bestdreambot/freex',GH_BRANCH='main';
+}
+
+const GH_REPO='bestdreambot/freex',GH_BRANCH='main';
 function utf8ToBase64(str){const bytes=new TextEncoder().encode(str);let bin='';bytes.forEach(b=>bin+=String.fromCharCode(b));return btoa(bin);}
 async function pushToGitHub(){
   const token=keys.key_github,status=document.getElementById('ghStatus');
@@ -575,8 +579,7 @@ style.textContent='.tab-btn{background:var(--bg-2);color:var(--text-dim);border:
 document.head.appendChild(style);
 
 switchMainTab(currentTab);
+
 </script>
 </body>
 </html>
-
-}
