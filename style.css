@@ -99,3 +99,104 @@ body[data-active-tab="chat"] #noteEditor{display:none !important;}
 body[data-active-tab="editor"] #composer{display:none !important;}
 body[data-active-tab="editor"] #messages{display:none !important;}
 body[data-active-tab="editor"] #notesView{display:none !important;}
+
+/* ════════════════════════════════════════════════════════════════════ */
+/* CRITICAL FIXES v6.2.2 — Composer/NoteEditor overlap                    */
+/* ════════════════════════════════════════════════════════════════════ */
+
+/* Hide composer when editor is active — MAXIMUM specificity */
+body[data-active-tab="editor"] #composer,
+body[data-active-tab="notes"] #composer,
+body[data-active-tab="view"] #composer {
+    display: none !important;
+}
+
+/* Hide messages when not in chat */
+body[data-active-tab="notes"] #messages,
+body[data-active-tab="editor"] #messages,
+body[data-active-tab="view"] #messages {
+    display: none !important;
+}
+
+/* Show notesView only in notes tab */
+body[data-active-tab="notes"] #notesView {
+    display: flex !important;
+}
+body[data-active-tab="chat"] #notesView,
+body[data-active-tab="editor"] #notesView,
+body[data-active-tab="view"] #notesView {
+    display: none !important;
+}
+
+/* Show noteEditor only in editor tab */
+body[data-active-tab="editor"] #noteEditor {
+    display: flex !important;
+}
+body[data-active-tab="chat"] #noteEditor,
+body[data-active-tab="notes"] #noteEditor,
+body[data-active-tab="view"] #noteEditor {
+    display: none !important;
+}
+
+/* Show composer only in chat tab */
+body[data-active-tab="chat"] #composer {
+    display: flex !important;
+}
+
+/* Show messages only in chat tab */
+body[data-active-tab="chat"] #messages {
+    display: flex !important;
+}
+
+/* Hide notesView by default */
+#notesView {
+    display: none;
+}
+
+/* Hide noteEditor by default */
+#noteEditor {
+    display: none;
+}
+
+/* Note editor overlay fix */
+#noteEditor {
+    position: relative;
+    z-index: 25;
+    background: var(--bg);
+    min-height: 100%;
+}
+
+/* ════════════════════════════════════════════════════════════════════ */
+/* Agent colors for chat labels                                         */
+/* ════════════════════════════════════════════════════════════════════ */
+.msg-model-label { font-size: 11px; padding: 0 4px; font-weight: 600; }
+.msg-model-label[data-model="deepseek"] { color: #10a37f; }
+.msg-model-label[data-model="gh_gpt4o"] { color: #19c37d; }
+.msg-model-label[data-model="gh_r1"] { color: #ff6b35; }
+.msg-model-label[data-model="gemini"] { color: #4285f4; }
+.msg-model-label[data-model="groq"] { color: #f55036; }
+.msg-model-label[data-model="cf_llama"] { color: #f48120; }
+
+/* ════════════════════════════════════════════════════════════════════ */
+/* Sidebar active fix — prevent green override                          */
+/* ════════════════════════════════════════════════════════════════════ */
+.sb-item.active {
+    background: rgba(16, 163, 127, 0.12) !important;
+    color: var(--accent) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════ */
+/* Unified view fixes                                                   */
+/* ════════════════════════════════════════════════════════════════════ */
+#hqView, #ghView {
+    display: none;
+    flex-direction: column;
+}
+#hqView.active, #ghView.active {
+    display: flex !important;
+}
+
+/* When view is open, hide main content */
+body[data-active-tab="view"] #view {
+    display: none !important;
+}
