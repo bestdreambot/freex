@@ -5,12 +5,13 @@ import { state, setState } from './state.js';
 import { db } from './db.js';
 import { callModel } from './api.js';
 import { renderSidebarList } from './sidebar.js';
-import { applyTheme } from './ui.js';
+import { toggleSidebar } from './ui.js';
 
 const viewEl = document.getElementById('view');
 
+// DeepSeek работает без личного ключа — сервер использует DEEPSEEK_API_KEY при отсутствии своего.
 export function availableModels() {
-  return ALL_MODELS.filter(m => state.keys[m.keyField]);
+  return ALL_MODELS.filter(m => m.provider === 'deepseek' || state.keys[m.keyField]);
 }
 
 export function getActiveChat() {
@@ -187,9 +188,6 @@ export function onGhPathChange() {
   const sel = document.getElementById('ghPathSelect');
   const inp = document.getElementById('ghPath');
   if (sel.value === '__custom__') { inp.style.display = 'block'; inp.value = ''; inp.focus(); }
+  else if (sel.value === 'agents/') { inp.style.display = 'block'; inp.value = 'agents/'; inp.focus(); inp.setSelectionRange(7, 7); }
   else { inp.style.display = 'none'; inp.value = sel.value; }
 }
-
-// Need to import these to avoid circular deps
-import { toggleSidebar } from './ui.js';
-import { renderSidebarList } from './sidebar.js';

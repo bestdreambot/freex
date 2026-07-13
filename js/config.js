@@ -6,10 +6,13 @@ export const LS = {
   hqUrl: 'freex_hq_url',
   active: 'freex_active_chat',
   draft: 'freex_draft',
+  noteDraft: 'freex_note_draft',
   theme: 'freex_theme',
   aiMemory: 'freex_ai_memory',
   tab: 'freex_tab'
 };
+
+export const APP_VERSION = 'FreeX 8.1';
 
 export const GH_REPO = 'bestdreambot/freex';
 export const GH_BRANCH = 'main';

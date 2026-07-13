@@ -37,7 +37,7 @@ export function moveChatToFolder(id, ev) {
 }
 
 function chatItemHTML(c) {
-  return '<div class="sb-item ' + (c.id === state.activeId && !state.viewOpen ? 'active' : '') + '" onclick="window.selectChat\'' + c.id + '\')"><span>' + escapeHtml(c.title) + '</span><span style="display:flex;gap:6px;"><span class="del" onclick="window.moveChatToFolder(\'' + c.id + '\',event)" title="В папку">📁</span><span class="del" onclick="window.deleteChat(\'' + c.id + '\',event)">✕</span></span></div>';
+  return '<div class="sb-item ' + (c.id === state.activeId && !state.viewOpen ? 'active' : '') + '" onclick="window.selectChat(\'' + c.id + '\')"><span>' + escapeHtml(c.title) + '</span><span style="display:flex;gap:6px;"><span class="del" onclick="window.moveChatToFolder(\'' + c.id + '\',event)" title="В папку">📁</span><span class="del" onclick="window.deleteChat(\'' + c.id + '\',event)">✕</span></span></div>';
 }
 
 export function renderSidebarList() {
