@@ -1,0 +1,81 @@
+﻿
+name                                                               version                             installDate publisher                     estimatedSizeMB
+----                                                               -------                             ----------- ---------                     ---------------
+Antigravity (User)                                                 1.23.2                              20260602    Google                                    994
+Avast Free Antivirus                                               26.5.10994.3655                                 Gen Digital Inc.                             
+Best Portal                                                        1.0                                 20250825    Google\Chrome                                
+Bybit 0.0.11                                                       0.0.11                                          bybit                                     287
+CapCut                                                             6.9.0.2786                                      Bytedance Pte. Ltd.                          
+CCleaner 7                                                         7.7.1313.1667                                   Piriform                                   28
+Claude                                                             1.15962.0                           20260626    Anthropic PBC                             196
+Copilot                                                            150.0.4078.48                       20260712    Корпорация Майкрософт                    4030
+Epic Games Launcher Prerequisites (x64)                            1.0.0.0                             20231124    Epic Games, Inc.                            9
+GIMP 3.0.4                                                         3.0.4.0                             20250822    The GIMP Team                             817
+Git                                                                2.51.0                              20250824    The Git Development Community             340
+GitHub                                                             1.0                                 20260626    Google\Chrome                                
+GitHub CLI                                                         2.93.0                              20260530    GitHub, Inc.                               39
+GitHub Copilot                                                     1.0.9                                           GitHub Inc.                               253
+GitHub Desktop                                                     3.5.2                               20250824    GitHub, Inc.                              168
+Gmail                                                              1.0                                 20231007    Google\Chrome                                
+Google Chrome                                                      150.0.7871.101                      20250808    Google LLC                                474
+Google Диск                                                        1.0                                 20231007    Google\Chrome                                
+IBKR Desktop                                                       latest (3.2f) 20260520 21:25:51                 Interactive Brokers LLC                   402
+Java 8 Update 51 (64-bit)                                          8.0.510                             20210924    Oracle Corporation                         89
+Java Auto Updater                                                  2.8.51.16                           20210924    Oracle Corporation                          2
+Launcher Prerequisites (x64)                                       1.0.0.0                                         Epic Games, Inc.                           20
+Microsoft Edge                                                     150.0.4078.65                       20250808    Microsoft Corporation                    3345
+Microsoft GameInput                                                10.1.22621.3036                     20230327    Microsoft Corporation                       1
+Microsoft Teams Meeting Add-in for Microsoft Office                1.26.11802                          20260605    Microsoft                                  34
+Microsoft Update Health Tools                                      5.72.0.0                            20231125    Microsoft Corporation                       1
+Microsoft Visual C++ 2010  x64 Redistributable - 10.0.40219        10.0.40219                          20231209    Microsoft Corporation                      14
+Microsoft Visual C++ 2010  x86 Redistributable - 10.0.40219        10.0.40219                          20231209    Microsoft Corporation                      11
+Microsoft Visual C++ 2013 Redistributable (x64) - 12.0.30501       12.0.30501.0                                    Microsoft Corporation                      21
+Microsoft Visual C++ 2013 Redistributable (x64) - 12.0.40664       12.0.40664.0                                    Microsoft Corporation                      21
+Microsoft Visual C++ 2013 Redistributable (x86) - 12.0.30501       12.0.30501.0                                    Microsoft Corporation                      17
+Microsoft Visual C++ 2013 Redistributable (x86) - 12.0.40664       12.0.40664.0                                    Microsoft Corporation                      17
+Microsoft Visual C++ 2013 x64 Additional Runtime - 12.0.40664      12.0.40664                          20250808    Microsoft Corporation                      12
+Microsoft Visual C++ 2013 x64 Minimum Runtime - 12.0.40664         12.0.40664                          20250808    Microsoft Corporation                       2
+Microsoft Visual C++ 2013 x86 Additional Runtime - 12.0.40664      12.0.40664                          20250808    Microsoft Corporation                       9
+Microsoft Visual C++ 2013 x86 Minimum Runtime - 12.0.40664         12.0.40664                          20250808    Microsoft Corporation                       2
+Microsoft Visual C++ 2015-2022 Redistributable (x64) - 14.44.35211 14.44.35211.0                                   Microsoft Corporation                      21
+Microsoft Visual C++ 2015-2022 Redistributable (x86) - 14.44.35211 14.44.35211.0                                   Microsoft Corporation                      18
+Microsoft Visual C++ 2022 X64 Additional Runtime - 14.44.35211     14.44.35211                         20250808    Microsoft Corporation                      12
+Microsoft Visual C++ 2022 X64 Minimum Runtime - 14.44.35211        14.44.35211                         20250808    Microsoft Corporation                       2
+Microsoft Visual C++ 2022 X86 Additional Runtime - 14.44.35211     14.44.35211                         20250808    Microsoft Corporation                      10
+Microsoft Visual C++ 2022 X86 Minimum Runtime - 14.44.35211        14.44.35211                         20250808    Microsoft Corporation                       2
+Microsoft Visual Studio Code (User)                                1.127.0                             20260712    Microsoft Corporation                     882
+Movavi Screen Recorder                                             24.6.1                              2025824     Movavi                                    291
+Movavi Suite                                                       3.2.0                               2025824     Movavi                                    435
+Movavi Video Converter                                             24.3.0                              2025824     Movavi                                    284
+Movavi Video Editor 25                                             25.13.0                             2025824     Movavi                                    418
+Node.js                                                            22.19.0                             20250830    Node.js Foundation                         98
+Notion 7.23.0                                                      7.23.0                                          Notion Labs, Inc                          364
+NVIDIA Install Application                                         2.1002.363.0                        20250627    NVIDIA Corporation                           
+NVIDIA Графический драйвер 511.69                                  511.69                              20250627    NVIDIA Corporation                           
+Obsidian                                                           1.9.12                                          Obsidian                                  927
+Python 3.13.7 (64-bit)                                             3.13.7150.0                                     Python Software Foundation                160
+Python 3.13.7 Add to Path (64-bit)                                 3.13.7150.0                         20250823    Python Software Foundation                  0
+Python 3.13.7 Core Interpreter (64-bit)                            3.13.7150.0                         20250817    Python Software Foundation                  6
+Python 3.13.7 Development Libraries (64-bit)                       3.13.7150.0                         20250817    Python Software Foundation                  3
+Python 3.13.7 Documentation (64-bit)                               3.13.7150.0                         20250817    Python Software Foundation                 59
+Python 3.13.7 Executables (64-bit)                                 3.13.7150.0                         20250817    Python Software Foundation                  3
+Python 3.13.7 pip Bootstrap (64-bit)                               3.13.7150.0                         20250817    Python Software Foundation                  0
+Python 3.13.7 Standard Library (64-bit)                            3.13.7150.0                         20250817    Python Software Foundation                 23
+Python 3.13.7 Tcl/Tk Support (64-bit)                              3.13.7150.0                         20250817    Python Software Foundation                 14
+Python 3.13.7 Test Suite (64-bit)                                  3.13.7150.0                         20250817    Python Software Foundation                 32
+Python Launcher                                                    3.13.7150.0                         20250817    Python Software Foundation                  2
+RustDesk                                                           1.4.9                                           RustDesk                                   74
+ScreenToGif                                                        2.41.5                              20250823    Nicke Manarin                             174
+Telegram Desktop                                                   6.0.2                               20250808    Telegram FZ-LLC                           159
+TLauncher                                                          2.8                                             TLauncher Inc.                               
+Trader Workstation                                                 latest (10.39.1h) 20250819 16:01:24             Interactive Brokers LLC                    13
+WhatsApp                                                           2.2208.15                           20220326    WhatsApp                                  142
+YouTube                                                            1.0                                 20231007    Google\Chrome                                
+Документы                                                          1.0                                 20231007    Google\Chrome                                
+Презентация                                                        1.0                                 20231007    Google\Chrome                                
+Проверка работоспособности ПК Windows                              3.6.2204.08001                      20220523    Microsoft Corporation                      12
+Среда выполнения Microsoft Edge WebView2 Runtime                   150.0.4078.65                       20260712    Корпорация Майкрософт                    3361
+Таблица                                                            1.0                                 20231007    Google\Chrome                                
+
+
+

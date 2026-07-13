@@ -1,0 +1,527 @@
+﻿[
+    {
+        "name":  "Antigravity (User)",
+        "version":  "1.23.2",
+        "installDate":  "20260602",
+        "publisher":  "Google",
+        "estimatedSizeMB":  994
+    },
+    {
+        "name":  "Avast Free Antivirus",
+        "version":  "26.5.10994.3655",
+        "installDate":  null,
+        "publisher":  "Gen Digital Inc.",
+        "estimatedSizeMB":  null
+    },
+    {
+        "name":  "Best Portal",
+        "version":  "1.0",
+        "installDate":  "20250825",
+        "publisher":  "Google\\Chrome",
+        "estimatedSizeMB":  null
+    },
+    {
+        "name":  "Bybit 0.0.11",
+        "version":  "0.0.11",
+        "installDate":  null,
+        "publisher":  "bybit",
+        "estimatedSizeMB":  287
+    },
+    {
+        "name":  "CapCut",
+        "version":  "6.9.0.2786",
+        "installDate":  null,
+        "publisher":  "Bytedance Pte. Ltd.",
+        "estimatedSizeMB":  null
+    },
+    {
+        "name":  "CCleaner 7",
+        "version":  "7.7.1313.1667",
+        "installDate":  null,
+        "publisher":  "Piriform",
+        "estimatedSizeMB":  28
+    },
+    {
+        "name":  "Claude",
+        "version":  "1.15962.0",
+        "installDate":  "20260626",
+        "publisher":  "Anthropic PBC",
+        "estimatedSizeMB":  196
+    },
+    {
+        "name":  "Copilot",
+        "version":  "150.0.4078.48",
+        "installDate":  "20260712",
+        "publisher":  "Корпорация Майкрософт",
+        "estimatedSizeMB":  4030
+    },
+    {
+        "name":  "Epic Games Launcher Prerequisites (x64)",
+        "version":  "1.0.0.0",
+        "installDate":  "20231124",
+        "publisher":  "Epic Games, Inc.",
+        "estimatedSizeMB":  9
+    },
+    {
+        "name":  "GIMP 3.0.4",
+        "version":  "3.0.4.0",
+        "installDate":  "20250822",
+        "publisher":  "The GIMP Team",
+        "estimatedSizeMB":  817
+    },
+    {
+        "name":  "Git",
+        "version":  "2.51.0",
+        "installDate":  "20250824",
+        "publisher":  "The Git Development Community",
+        "estimatedSizeMB":  340
+    },
+    {
+        "name":  "GitHub",
+        "version":  "1.0",
+        "installDate":  "20260626",
+        "publisher":  "Google\\Chrome",
+        "estimatedSizeMB":  null
+    },
+    {
+        "name":  "GitHub CLI",
+        "version":  "2.93.0",
+        "installDate":  "20260530",
+        "publisher":  "GitHub, Inc.",
+        "estimatedSizeMB":  39
+    },
+    {
+        "name":  "GitHub Copilot",
+        "version":  "1.0.9",
+        "installDate":  null,
+        "publisher":  "GitHub Inc.",
+        "estimatedSizeMB":  253
+    },
+    {
+        "name":  "GitHub Desktop",
+        "version":  "3.5.2",
+        "installDate":  "20250824",
+        "publisher":  "GitHub, Inc.",
+        "estimatedSizeMB":  168
+    },
+    {
+        "name":  "Gmail",
+        "version":  "1.0",
+        "installDate":  "20231007",
+        "publisher":  "Google\\Chrome",
+        "estimatedSizeMB":  null
+    },
+    {
+        "name":  "Google Chrome",
+        "version":  "150.0.7871.101",
+        "installDate":  "20250808",
+        "publisher":  "Google LLC",
+        "estimatedSizeMB":  474
+    },
+    {
+        "name":  "Google Диск",
+        "version":  "1.0",
+        "installDate":  "20231007",
+        "publisher":  "Google\\Chrome",
+        "estimatedSizeMB":  null
+    },
+    {
+        "name":  "IBKR Desktop",
+        "version":  "latest (3.2f) 20260520 21:25:51",
+        "installDate":  null,
+        "publisher":  "Interactive Brokers LLC",
+        "estimatedSizeMB":  402
+    },
+    {
+        "name":  "Java 8 Update 51 (64-bit)",
+        "version":  "8.0.510",
+        "installDate":  "20210924",
+        "publisher":  "Oracle Corporation",
+        "estimatedSizeMB":  89
+    },
+    {
+        "name":  "Java Auto Updater",
+        "version":  "2.8.51.16",
+        "installDate":  "20210924",
+        "publisher":  "Oracle Corporation",
+        "estimatedSizeMB":  2
+    },
+    {
+        "name":  "Launcher Prerequisites (x64)",
+        "version":  "1.0.0.0",
+        "installDate":  null,
+        "publisher":  "Epic Games, Inc.",
+        "estimatedSizeMB":  20
+    },
+    {
+        "name":  "Microsoft Edge",
+        "version":  "150.0.4078.65",
+        "installDate":  "20250808",
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  3345
+    },
+    {
+        "name":  "Microsoft GameInput",
+        "version":  "10.1.22621.3036",
+        "installDate":  "20230327",
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  1
+    },
+    {
+        "name":  "Microsoft Teams Meeting Add-in for Microsoft Office",
+        "version":  "1.26.11802",
+        "installDate":  "20260605",
+        "publisher":  "Microsoft",
+        "estimatedSizeMB":  34
+    },
+    {
+        "name":  "Microsoft Update Health Tools",
+        "version":  "5.72.0.0",
+        "installDate":  "20231125",
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  1
+    },
+    {
+        "name":  "Microsoft Visual C++ 2010  x64 Redistributable - 10.0.40219",
+        "version":  "10.0.40219",
+        "installDate":  "20231209",
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  14
+    },
+    {
+        "name":  "Microsoft Visual C++ 2010  x86 Redistributable - 10.0.40219",
+        "version":  "10.0.40219",
+        "installDate":  "20231209",
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  11
+    },
+    {
+        "name":  "Microsoft Visual C++ 2013 Redistributable (x64) - 12.0.30501",
+        "version":  "12.0.30501.0",
+        "installDate":  null,
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  21
+    },
+    {
+        "name":  "Microsoft Visual C++ 2013 Redistributable (x64) - 12.0.40664",
+        "version":  "12.0.40664.0",
+        "installDate":  null,
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  21
+    },
+    {
+        "name":  "Microsoft Visual C++ 2013 Redistributable (x86) - 12.0.30501",
+        "version":  "12.0.30501.0",
+        "installDate":  null,
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  17
+    },
+    {
+        "name":  "Microsoft Visual C++ 2013 Redistributable (x86) - 12.0.40664",
+        "version":  "12.0.40664.0",
+        "installDate":  null,
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  17
+    },
+    {
+        "name":  "Microsoft Visual C++ 2013 x64 Additional Runtime - 12.0.40664",
+        "version":  "12.0.40664",
+        "installDate":  "20250808",
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  12
+    },
+    {
+        "name":  "Microsoft Visual C++ 2013 x64 Minimum Runtime - 12.0.40664",
+        "version":  "12.0.40664",
+        "installDate":  "20250808",
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  2
+    },
+    {
+        "name":  "Microsoft Visual C++ 2013 x86 Additional Runtime - 12.0.40664",
+        "version":  "12.0.40664",
+        "installDate":  "20250808",
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  9
+    },
+    {
+        "name":  "Microsoft Visual C++ 2013 x86 Minimum Runtime - 12.0.40664",
+        "version":  "12.0.40664",
+        "installDate":  "20250808",
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  2
+    },
+    {
+        "name":  "Microsoft Visual C++ 2015-2022 Redistributable (x64) - 14.44.35211",
+        "version":  "14.44.35211.0",
+        "installDate":  null,
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  21
+    },
+    {
+        "name":  "Microsoft Visual C++ 2015-2022 Redistributable (x86) - 14.44.35211",
+        "version":  "14.44.35211.0",
+        "installDate":  null,
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  18
+    },
+    {
+        "name":  "Microsoft Visual C++ 2022 X64 Additional Runtime - 14.44.35211",
+        "version":  "14.44.35211",
+        "installDate":  "20250808",
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  12
+    },
+    {
+        "name":  "Microsoft Visual C++ 2022 X64 Minimum Runtime - 14.44.35211",
+        "version":  "14.44.35211",
+        "installDate":  "20250808",
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  2
+    },
+    {
+        "name":  "Microsoft Visual C++ 2022 X86 Additional Runtime - 14.44.35211",
+        "version":  "14.44.35211",
+        "installDate":  "20250808",
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  10
+    },
+    {
+        "name":  "Microsoft Visual C++ 2022 X86 Minimum Runtime - 14.44.35211",
+        "version":  "14.44.35211",
+        "installDate":  "20250808",
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  2
+    },
+    {
+        "name":  "Microsoft Visual Studio Code (User)",
+        "version":  "1.127.0",
+        "installDate":  "20260712",
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  882
+    },
+    {
+        "name":  "Movavi Screen Recorder",
+        "version":  "24.6.1",
+        "installDate":  "2025824",
+        "publisher":  "Movavi",
+        "estimatedSizeMB":  291
+    },
+    {
+        "name":  "Movavi Suite",
+        "version":  "3.2.0",
+        "installDate":  "2025824",
+        "publisher":  "Movavi",
+        "estimatedSizeMB":  435
+    },
+    {
+        "name":  "Movavi Video Converter",
+        "version":  "24.3.0",
+        "installDate":  "2025824",
+        "publisher":  "Movavi",
+        "estimatedSizeMB":  284
+    },
+    {
+        "name":  "Movavi Video Editor 25",
+        "version":  "25.13.0",
+        "installDate":  "2025824",
+        "publisher":  "Movavi",
+        "estimatedSizeMB":  418
+    },
+    {
+        "name":  "Node.js",
+        "version":  "22.19.0",
+        "installDate":  "20250830",
+        "publisher":  "Node.js Foundation",
+        "estimatedSizeMB":  98
+    },
+    {
+        "name":  "Notion 7.23.0",
+        "version":  "7.23.0",
+        "installDate":  null,
+        "publisher":  "Notion Labs, Inc",
+        "estimatedSizeMB":  364
+    },
+    {
+        "name":  "NVIDIA Install Application",
+        "version":  "2.1002.363.0",
+        "installDate":  "20250627",
+        "publisher":  "NVIDIA Corporation",
+        "estimatedSizeMB":  null
+    },
+    {
+        "name":  "NVIDIA Графический драйвер 511.69",
+        "version":  "511.69",
+        "installDate":  "20250627",
+        "publisher":  "NVIDIA Corporation",
+        "estimatedSizeMB":  null
+    },
+    {
+        "name":  "Obsidian",
+        "version":  "1.9.12",
+        "installDate":  null,
+        "publisher":  "Obsidian",
+        "estimatedSizeMB":  927
+    },
+    {
+        "name":  "Python 3.13.7 (64-bit)",
+        "version":  "3.13.7150.0",
+        "installDate":  null,
+        "publisher":  "Python Software Foundation",
+        "estimatedSizeMB":  160
+    },
+    {
+        "name":  "Python 3.13.7 Add to Path (64-bit)",
+        "version":  "3.13.7150.0",
+        "installDate":  "20250823",
+        "publisher":  "Python Software Foundation",
+        "estimatedSizeMB":  0
+    },
+    {
+        "name":  "Python 3.13.7 Core Interpreter (64-bit)",
+        "version":  "3.13.7150.0",
+        "installDate":  "20250817",
+        "publisher":  "Python Software Foundation",
+        "estimatedSizeMB":  6
+    },
+    {
+        "name":  "Python 3.13.7 Development Libraries (64-bit)",
+        "version":  "3.13.7150.0",
+        "installDate":  "20250817",
+        "publisher":  "Python Software Foundation",
+        "estimatedSizeMB":  3
+    },
+    {
+        "name":  "Python 3.13.7 Documentation (64-bit)",
+        "version":  "3.13.7150.0",
+        "installDate":  "20250817",
+        "publisher":  "Python Software Foundation",
+        "estimatedSizeMB":  59
+    },
+    {
+        "name":  "Python 3.13.7 Executables (64-bit)",
+        "version":  "3.13.7150.0",
+        "installDate":  "20250817",
+        "publisher":  "Python Software Foundation",
+        "estimatedSizeMB":  3
+    },
+    {
+        "name":  "Python 3.13.7 pip Bootstrap (64-bit)",
+        "version":  "3.13.7150.0",
+        "installDate":  "20250817",
+        "publisher":  "Python Software Foundation",
+        "estimatedSizeMB":  0
+    },
+    {
+        "name":  "Python 3.13.7 Standard Library (64-bit)",
+        "version":  "3.13.7150.0",
+        "installDate":  "20250817",
+        "publisher":  "Python Software Foundation",
+        "estimatedSizeMB":  23
+    },
+    {
+        "name":  "Python 3.13.7 Tcl/Tk Support (64-bit)",
+        "version":  "3.13.7150.0",
+        "installDate":  "20250817",
+        "publisher":  "Python Software Foundation",
+        "estimatedSizeMB":  14
+    },
+    {
+        "name":  "Python 3.13.7 Test Suite (64-bit)",
+        "version":  "3.13.7150.0",
+        "installDate":  "20250817",
+        "publisher":  "Python Software Foundation",
+        "estimatedSizeMB":  32
+    },
+    {
+        "name":  "Python Launcher",
+        "version":  "3.13.7150.0",
+        "installDate":  "20250817",
+        "publisher":  "Python Software Foundation",
+        "estimatedSizeMB":  2
+    },
+    {
+        "name":  "RustDesk",
+        "version":  "1.4.9",
+        "installDate":  null,
+        "publisher":  "RustDesk",
+        "estimatedSizeMB":  74
+    },
+    {
+        "name":  "ScreenToGif",
+        "version":  "2.41.5",
+        "installDate":  "20250823",
+        "publisher":  "Nicke Manarin",
+        "estimatedSizeMB":  174
+    },
+    {
+        "name":  "Telegram Desktop",
+        "version":  "6.0.2",
+        "installDate":  "20250808",
+        "publisher":  "Telegram FZ-LLC",
+        "estimatedSizeMB":  159
+    },
+    {
+        "name":  "TLauncher",
+        "version":  "2.8",
+        "installDate":  null,
+        "publisher":  "TLauncher Inc.",
+        "estimatedSizeMB":  null
+    },
+    {
+        "name":  "Trader Workstation",
+        "version":  "latest (10.39.1h) 20250819 16:01:24",
+        "installDate":  null,
+        "publisher":  "Interactive Brokers LLC",
+        "estimatedSizeMB":  13
+    },
+    {
+        "name":  "WhatsApp",
+        "version":  "2.2208.15",
+        "installDate":  "20220326",
+        "publisher":  "WhatsApp",
+        "estimatedSizeMB":  142
+    },
+    {
+        "name":  "YouTube",
+        "version":  "1.0",
+        "installDate":  "20231007",
+        "publisher":  "Google\\Chrome",
+        "estimatedSizeMB":  null
+    },
+    {
+        "name":  "Документы",
+        "version":  "1.0",
+        "installDate":  "20231007",
+        "publisher":  "Google\\Chrome",
+        "estimatedSizeMB":  null
+    },
+    {
+        "name":  "Презентация",
+        "version":  "1.0",
+        "installDate":  "20231007",
+        "publisher":  "Google\\Chrome",
+        "estimatedSizeMB":  null
+    },
+    {
+        "name":  "Проверка работоспособности ПК Windows",
+        "version":  "3.6.2204.08001",
+        "installDate":  "20220523",
+        "publisher":  "Microsoft Corporation",
+        "estimatedSizeMB":  12
+    },
+    {
+        "name":  "Среда выполнения Microsoft Edge WebView2 Runtime",
+        "version":  "150.0.4078.65",
+        "installDate":  "20260712",
+        "publisher":  "Корпорация Майкрософт",
+        "estimatedSizeMB":  3361
+    },
+    {
+        "name":  "Таблица",
+        "version":  "1.0",
+        "installDate":  "20231007",
+        "publisher":  "Google\\Chrome",
+        "estimatedSizeMB":  null
+    }
+]
