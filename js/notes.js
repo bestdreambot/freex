@@ -1,9 +1,60 @@
 // FreeX Notes Module
 import { LS } from './config.js';
-import { save, escapeHtml, extractTags } from './utils.js';
+import { save, loadJSON, escapeHtml, extractTags } from './utils.js';
 import { state, setState } from './state.js';
 import { db } from './db.js';
-import { toggleSidebar } from './ui.js';
+import { toggleSidebar, showToast } from './ui.js';
+
+// Черновик редактируемой заметки — автосохранение/восстановление/защита от потери
+let editorBaseline = { title: '', content: '' };
+
+function currentEditorFields() {
+  return {
+    title: document.getElementById('noteTitle').value,
+    content: document.getElementById('noteContent').value
+  };
+}
+
+function saveDraft() {
+  const f = currentEditorFields();
+  save(LS.noteDraft, { id: state.editingNoteId, title: f.title, content: f.content });
+}
+
+function clearDraft() {
+  localStorage.removeItem(LS.noteDraft);
+}
+
+function isEditorDirty() {
+  const f = currentEditorFields();
+  return f.title !== editorBaseline.title || f.content !== editorBaseline.content;
+}
+
+function openEditorFields(id, title, content) {
+  editorBaseline = { title, content };
+  const draft = loadJSON(LS.noteDraft, null);
+  if (draft && draft.id === id && (draft.title !== title || draft.content !== content)) {
+    document.getElementById('noteTitle').value = draft.title;
+    document.getElementById('noteContent').value = draft.content;
+    showToast('Восстановлен черновик несохранённых изменений');
+  } else {
+    document.getElementById('noteTitle').value = title;
+    document.getElementById('noteContent').value = content;
+  }
+}
+
+// Слушатели ставятся один раз — поля статичны в разметке index.html.
+// Модульные скрипты грузятся с defer, так что DOMContentLoaded мог уже случиться — подстраховка.
+function wireDraftListeners() {
+  const titleEl = document.getElementById('noteTitle');
+  const contentEl = document.getElementById('noteContent');
+  if (titleEl) titleEl.addEventListener('input', saveDraft);
+  if (contentEl) contentEl.addEventListener('input', saveDraft);
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', wireDraftListeners);
+} else {
+  wireDraftListeners();
+}
 
 export async function renderNotes() {
   const search = document.getElementById('searchNotes').value.toLowerCase();
@@ -22,8 +73,7 @@ export async function renderNotes() {
 
 export function newNote() {
   setState({ editingNoteId: null });
-  document.getElementById('noteTitle').value = '';
-  document.getElementById('noteContent').value = '';
+  openEditorFields(null, '', '');
   document.body.dataset.activeTab = 'editor';
   document.getElementById('view').style.display = 'none';
   document.getElementById('noteEditor').style.display = 'flex';
@@ -39,10 +89,15 @@ export async function saveNote() {
   } else {
     await db.notes.add({ title, content, tags, createdAt: Date.now(), updatedAt: Date.now() });
   }
-  closeEditor();
+  clearDraft();
+  closeEditor(true);
 }
 
-export function closeEditor() {
+export function closeEditor(skipConfirm) {
+  if (!skipConfirm && isEditorDirty()) {
+    if (!confirm('Есть несохранённые изменения в заметке. Уйти без сохранения?')) return;
+    clearDraft();
+  }
   document.getElementById('noteEditor').style.display = 'none';
   document.getElementById('view').style.display = 'flex';
   document.body.dataset.activeTab = 'notes';
@@ -53,8 +108,7 @@ export function closeEditor() {
 export async function editNote(id) {
   const n = await db.notes.get(id);
   setState({ editingNoteId: id });
-  document.getElementById('noteTitle').value = n.title;
-  document.getElementById('noteContent').value = n.content;
+  openEditorFields(id, n.title, n.content);
   document.body.dataset.activeTab = 'editor';
   document.getElementById('view').style.display = 'none';
   document.getElementById('noteEditor').style.display = 'flex';
@@ -65,8 +119,7 @@ export async function openNoteByTitle(title) {
   const note = await db.notes.filter(n => n.title.toLowerCase() === title.toLowerCase()).first();
   if (note) {
     setState({ editingNoteId: note.id });
-    document.getElementById('noteTitle').value = note.title;
-    document.getElementById('noteContent').value = note.content;
+    openEditorFields(note.id, note.title, note.content);
     window.switchTab('notes');
     document.body.dataset.activeTab = 'editor';
     document.getElementById('view').style.display = 'none';

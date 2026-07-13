@@ -68,3 +68,17 @@ export function switchSettingsTab(id) {
   document.getElementById(id).classList.add('active');
   document.querySelector('.tab[data-tab="' + id + '"]').classList.add('active');
 }
+
+let toastTimer = null;
+export function showToast(text) {
+  let el = document.getElementById('toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
