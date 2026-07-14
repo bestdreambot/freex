@@ -1,0 +1,9 @@
+.DS_Store
+*.log
+npm-debug.log*
+node_modules/
+.vscode-test/
+out/
+*.vsix
+.env
+.env.local
